@@ -1,4 +1,4 @@
-package lyc.compiler;
+ package lyc.compiler;
 
 import java_cup.runtime.Symbol;
 import lyc.compiler.ParserSym;
