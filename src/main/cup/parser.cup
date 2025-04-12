@@ -6,15 +6,54 @@ class Parser;
 
 
 // Terminals
-terminal ASSIG;
-terminal PLUS;
-terminal SUB;
-terminal MULT;
-terminal DIV;
-terminal OPEN_BRACKET;
-terminal CLOSE_BRACKET;
-terminal INTEGER_CONSTANT;
-terminal IDENTIFIER;
+terminal NUMERAL;
+terminal INCLUDE;
+terminal PUNTO;
+terminal INTEGER;
+terminal FLOAT;
+terminal STRING;
+terminal MAIN;
+terminal ELSE;
+terminal CORCH_ABRE;
+terminal CORCH_CIERRA;
+terminal ASIGNACION;
+terminal PUNTO_COMA;
+terminal SYS_OUT;
+terminal SYS_IN;
+terminal AND;
+terminal OR;
+terminal POINTER;
+terminal BARRA;
+terminal ASTERISCO;
+terminal SALTO_LINEA;
+terminal COMENTARIO_MULTI;
+terminal COMENTARIO_SINGLE;
+
+terminal CTE;
+terminal ID;
+terminal OP_SUM;
+terminal OP_MUL;
+terminal OP_RES;
+terminal OP_DIV;
+terminal PA;
+terminal PC;
+terminal IF;
+terminal WHILE;
+terminal COMA;
+terminal TEXTO;
+terminal DISTINTO;
+terminal NEGADO;
+terminal IGUAL_IGUAL;
+terminal MENOR_IGUAL;
+terminal MAYOR_IGUAL;
+terminal MENOR;
+terminal MAYOR;
+terminal LLA;
+terminal LLC;
+terminal CTE_REAL;
+terminal INIT;
+terminal SLICEANDCONCAT;
+terminal NEGCALCULATION;
 
 // Non Terminals
 non terminal sentence;
@@ -26,14 +65,4 @@ non terminal factor;
 // Start Symbol Definition
 start with sentence;
 
-sentence ::= assignment {: System.out.println("End"); :};
-assignment ::= IDENTIFIER ASSIG expression {: System.out.println("Assignment"); :};
-expression ::= expression PLUS term {: System.out.println("+"); :};
-expression ::= expression SUB term {: System.out.println("-"); :};
-expression ::= term {: System.out.println("Expression = Term"); :};
-term ::= term MULT factor {: System.out.println("*"); :};
-term ::= term DIV factor {: System.out.println("/"); :};
-term ::= factor {: System.out.println("Term = factor"); :};
-factor ::= IDENTIFIER:id  {: System.out.println("Id: " + id); :};
-factor ::= INTEGER_CONSTANT:constant {: System.out.println("Constant: " + constant ); :};
-factor ::= OPEN_BRACKET expression CLOSE_BRACKET {: System.out.println("Factor = (Expression)"); :};
+sentence ::= {: System.out.println("End"); :};
