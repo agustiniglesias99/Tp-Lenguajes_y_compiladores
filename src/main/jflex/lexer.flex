@@ -82,9 +82,8 @@ BARRA				=	"\/"
 ASTERISCO			=	"\*"
 SALTO_LINEA			=	"\n|\r\n|\r"
 MENOS_ASTERISCO		=	[^*]
-COMENTARIO_MULTI    =   "/+" ({SALTO_LINEA}* {MENOS_ASTERISCO}* {SALTO_LINEA}*)* "+/"
 CUALQUIER_CARACTER 	= 	[^\r\n]
-COMENTARIO_SINGLE   =   "//" {CUALQUIER_CARACTER}* {SALTO_LINEA}?
+COMENTARIO_SINGLE   =   "#+" {CUALQUIER_CARACTER} "+#"
 OP_RES		        =	"-"
 CTE		            =	("0"|( ("-")? [1-9]{DIGITO}*))
 
@@ -132,7 +131,6 @@ CTE_REAL            =	{CTE}? {PUNTO} {DIGITO}*//[0]{0,1}[1-9]{0,11}[.][0-9]{0,11
 {SYS_OUT}	        {	return symbol(ParserSym.SYS_OUT,yytext());		}
 {SYS_IN}	        {	return symbol(ParserSym.SYS_IN,yytext());		}
 {COMENTARIO_SINGLE} {	/*ignorar*/										}
-{COMENTARIO_MULTI}  {	/*ignorar*/										}
 {AND}	            {	return symbol(ParserSym.AND,yytext());			}
 {OR}	            {	return symbol(ParserSym.OR,yytext());			}
 {POINTER}	        {	return symbol(ParserSym.POINTER,yytext());		}

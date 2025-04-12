@@ -56,13 +56,32 @@ terminal SLICEANDCONCAT;
 terminal NEGCALCULATION;
 
 // Non Terminals
-non terminal sentence;
-non terminal assignment;
-non terminal expression;
-non terminal term;
+non terminal programa;
+non terminal sentencia;
+non terminal asignacion;
+non terminal expresion;
 non terminal factor;
+non terminal termino;
 
 // Start Symbol Definition
-start with sentence;
+start with programa;
 
-sentence ::= {: System.out.println("End"); :};
+programa ::= programa sentencia {: System.out.println("Regla 1"); :};
+programa ::= sentencia {: System.out.println("Regla 2"); :};
+
+sentencia ::= asignacion {: System.out.println("Regla 3"); :};
+
+asignacion ::= ID ASIGNACION expresion {: System.out.println("Regla 4"); :};
+
+expresion ::= expresion OP_SUM factor {: System.out.println("Regla 5"); :};
+expresion ::= expresion OP_RES factor {: System.out.println("Regla 6"); :};
+expresion ::= factor {: System.out.println("Regla 7"); :};
+
+factor    ::= factor OP_MUL termino {: System.out.println("Regla 8"); :};
+factor    ::= factor OP_DIV termino {: System.out.println("Regla 9"); :};
+factor    ::= termino;
+
+termino   ::= CTE {: System.out.println("Regla 10"); :};
+termino   ::= ID {: System.out.println("Regla 11"); :};
+termino   ::= CTE_REAL {: System.out.println("Regla 12"); :};
+termino   ::= PA expresion PC {: System.out.println("Regla 13"); :};

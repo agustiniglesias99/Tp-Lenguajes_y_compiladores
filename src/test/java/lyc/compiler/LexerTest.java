@@ -17,55 +17,53 @@ import static com.google.common.truth.Truth.assertThat;
 import static lyc.compiler.constants.Constants.MAX_LENGTH;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-
-@Disabled
 public class LexerTest {
 
   private Lexer lexer;
 
 
-  @Test
-  public void comment() throws Exception{
-    scan("/*This is a comment*/");
-    assertThat(nextToken()).isEqualTo(ParserSym.EOF);
-  }
-
-  @Test
-  public void invalidStringConstantLength() {
-    assertThrows(InvalidLengthException.class, () -> {
-      scan("\"%s\"".formatted(getRandomString()));
-      nextToken();
-    });
-  }
-
-  @Test
-  public void invalidIdLength() {
-    assertThrows(InvalidLengthException.class, () -> {
-      scan(getRandomString());
-      nextToken();
-    });
-  }
-
-  @Test
-  public void invalidPositiveIntegerConstantValue() {
-    assertThrows(InvalidIntegerException.class, () -> {
-      scan("%d".formatted(9223372036854775807L));
-      nextToken();
-    });
-  }
-
-  @Test
-  public void invalidNegativeIntegerConstantValue() {
-    assertThrows(InvalidIntegerException.class, () -> {
-      scan("%d".formatted(-9223372036854775807L));
-      nextToken();
-    });
-  }
+//  @Test
+//  public void comment() throws Exception{
+//    scan("/*This is a comment*/");
+//    assertThat(nextToken()).isEqualTo(ParserSym.EOF);
+//  }
+//
+//  @Test
+//  public void invalidStringConstantLength() {
+//    assertThrows(InvalidLengthException.class, () -> {
+//      scan("\"%s\"".formatted(getRandomString()));
+//      nextToken();
+//    });
+//  }
+//
+//  @Test
+//  public void invalidIdLength() {
+//    assertThrows(InvalidLengthException.class, () -> {
+//      scan(getRandomString());
+//      nextToken();
+//    });
+//  }
+//
+//  @Test
+//  public void invalidPositiveIntegerConstantValue() {
+//    assertThrows(InvalidIntegerException.class, () -> {
+//      scan("%d".formatted(9223372036854775807L));
+//      nextToken();
+//    });
+//  }
+//
+//  @Test
+//  public void invalidNegativeIntegerConstantValue() {
+//    assertThrows(InvalidIntegerException.class, () -> {
+//      scan("%d".formatted(-9223372036854775807L));
+//      nextToken();
+//    });
+//  }
 
 
   @Test
   public void assignmentWithExpressions() throws Exception {
-    scan("c:=d*(e- 21)/4");
+    scan("c := d*(e- 21)/4");
     assertThat(nextToken()).isEqualTo(ParserSym.ID);
     assertThat(nextToken()).isEqualTo(ParserSym.ASIGNACION);
     assertThat(nextToken()).isEqualTo(ParserSym.ID);
@@ -73,17 +71,31 @@ public class LexerTest {
     assertThat(nextToken()).isEqualTo(ParserSym.PA);
     assertThat(nextToken()).isEqualTo(ParserSym.ID);
     assertThat(nextToken()).isEqualTo(ParserSym.OP_RES);
-    assertThat(nextToken()).isEqualTo(ParserSym.CTE_REAL);
+    assertThat(nextToken()).isEqualTo(ParserSym.CTE);
     assertThat(nextToken()).isEqualTo(ParserSym.PC);
     assertThat(nextToken()).isEqualTo(ParserSym.OP_DIV);
-    assertThat(nextToken()).isEqualTo(ParserSym.CTE_REAL);
+    assertThat(nextToken()).isEqualTo(ParserSym.CTE);
     assertThat(nextToken()).isEqualTo(ParserSym.EOF);
   }
 
+//  @Test
+//  public void unknownCharacter() {
+//    assertThrows(UnknownCharacterException.class, () -> {
+//      scan("#");
+//      nextToken();
+//    });
+//  }
+
   @Test
-  public void unknownCharacter() {
-    assertThrows(UnknownCharacterException.class, () -> {
-      scan("#");
+  public void correctReal() throws CompilerException, IOException {
+    scan("2.5");
+    assertThat(nextToken()).isEqualTo(ParserSym.CTE_REAL);
+  }
+
+  @Test
+  public void realOutOfRange() throws CompilerException, IOException {
+    assertThrows(InvalidIntegerException.class, () -> {
+      scan("1000000000000000000000000000000000000001.0");
       nextToken();
     });
   }
