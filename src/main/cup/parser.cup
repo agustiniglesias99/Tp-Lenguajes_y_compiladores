@@ -62,6 +62,12 @@ non terminal asignacion;
 non terminal expresion;
 non terminal factor;
 non terminal termino;
+non terminal ifHeader;
+non terminal seleccion;
+non terminal condicion;
+non terminal comparacion;
+non terminal comparador;
+non terminal iteracion;
 
 // Start Symbol Definition
 start with programa;
@@ -70,8 +76,32 @@ programa ::= programa sentencia {: System.out.println("Regla 1"); :};
 programa ::= sentencia {: System.out.println("Regla 2"); :};
 
 sentencia ::= asignacion {: System.out.println("Regla 3"); :};
+sentencia ::= seleccion {: System.out.println("sentencia ::= seleccion"); :};
+sentencia ::= iteracion {: System.out.println("sentencia ::= seleccion"); :};
+
 
 asignacion ::= ID ASIGNACION expresion {: System.out.println("Regla 4"); :};
+
+iteracion 	::= 	WHILE:_while PA condicion PC LLA programa LLC {: System.out.println("WHILE:_while PA condicion PC LLA programa LLC"); :};
+ifHeader   ::= 	IF PA condicion PC {: System.out.println("IF PA condicion PC"); :};
+
+seleccion	::=		ifHeader LLA programa LLC {: System.out.println("ifHeader LLA programa LLC"); :};
+seleccion	::= 	ifHeader LLA programa LLC ELSE LLA programa LLC {: System.out.println("ifHeader LLA programa LLC ELSE LLA programa LLC"); :};
+
+condicion 	::= 	comparacion AND:op comparacion {: System.out.println("comparacion AND:op comparacion"); :};
+condicion 	::= 	comparacion OR:op comparacion  {: System.out.println("comparacion OR:op comparacion"); :};
+condicion	::= 	comparacion 				   {: System.out.println("comparacion"); :};
+
+condicion 	::=		NEGADO comparacion			   {: System.out.println("NEGADO condicion"); :};
+condicion	::= 	NEGADO expresion 			   {: System.out.println("NEGADO expresion"); :};
+
+comparacion ::= 	expresion comparador expresion  {: System.out.println("expresion comparador expresion"); :};
+comparador  ::= 	IGUAL_IGUAL:comp 				{: System.out.println("IGUAL_IGUAL:comp"); :};
+comparador  ::= 	DISTINTO:comp 					{: System.out.println("DISTINTO:comp"); :};
+comparador  ::= 	MAYOR_IGUAL:comp 				{: System.out.println("MAYOR_IGUAL:comp"); :};
+comparador  ::= 	MENOR_IGUAL:comp				{: System.out.println("MENOR_IGUAL:comp"); :};
+comparador  ::= 	MAYOR:comp						{: System.out.println("MAYOR:comp"); :};
+comparador  ::= 	MENOR:comp						{: System.out.println("MENOR:comp"); :};
 
 expresion ::= expresion OP_SUM factor {: System.out.println("Regla 5"); :};
 expresion ::= expresion OP_RES factor {: System.out.println("Regla 6"); :};

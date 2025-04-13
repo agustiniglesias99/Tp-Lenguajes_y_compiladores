@@ -75,8 +75,8 @@ ASIGNACION			=	":="
 PUNTO_COMA			=	";"
 SYS_OUT				=	"write"
 SYS_IN				=	"read"
-AND					=	"&&"
-OR					=	"||"
+AND					=	"AND"
+OR					=	"OR"
 POINTER				=	"&"
 BARRA				=	"\/"
 ASTERISCO			=	"\*"
@@ -104,7 +104,7 @@ WHILE               =	"while"
 COMA                =	","
 TEXTO               =	[\"].*[\"]
 DISTINTO            =	"!="
-NEGADO				=	"!"
+NEGADO				=	"NOT"
 MENOR_IGUAL         =	"<="
 MAYOR_IGUAL         =	">="
 MENOR               =	"<"
@@ -139,6 +139,7 @@ CTE_REAL            =	{CTE}? {PUNTO} {DIGITO}*//[0]{0,1}[1-9]{0,11}[.][0-9]{0,11
 {INTEGER}		    {	return symbol(ParserSym.INTEGER, yytext());		}
 {FLOAT}		        {	return symbol(ParserSym.FLOAT, yytext());		}
 {IF}                {	return symbol(ParserSym.IF, yytext());			}
+{NEGADO}			{	return symbol(ParserSym.NEGADO, yytext());		}
 {WHILE}             {	return symbol(ParserSym.WHILE, yytext());		}
 {COMA}	            {	return symbol(ParserSym.COMA, yytext());		}
 {CTE}			    {
@@ -179,7 +180,6 @@ CTE_REAL            =	{CTE}? {PUNTO} {DIGITO}*//[0]{0,1}[1-9]{0,11}[.][0-9]{0,11
 {LLA}				{	return symbol(ParserSym.LLA, yytext());	}
 {LLC}				{	return symbol(ParserSym.LLC, yytext());	}
 {DISTINTO}	        {	return symbol(ParserSym.DISTINTO, yytext());		}
-{NEGADO}			{	return symbol(ParserSym.NEGADO, yytext());		}
 {IGUAL_IGUAL}	    {	return symbol(ParserSym.IGUAL_IGUAL, yytext());		}
 {OP_SUM}			{	return symbol(ParserSym.OP_SUM, yytext());		}
 {OP_MUL}			{	return symbol(ParserSym.OP_MUL, yytext());		}
