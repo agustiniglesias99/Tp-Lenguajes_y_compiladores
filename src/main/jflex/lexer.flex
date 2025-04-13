@@ -86,7 +86,7 @@ CUALQUIER_CARACTER 	= 	[^\r\n]
 COMENTARIO_SINGLE   =   "#+" {CUALQUIER_CARACTER} "+#"
 OP_RES		        =	"-"
 CTE		            =	("0"|( ("-")? [1-9]{DIGITO}*))
-
+CADENA              = \"([^\"\\]|\\.)*\"
 
 ID			        =	{LETRA}({LETRA}|{DIGITO})*
 
@@ -124,6 +124,8 @@ CTE_REAL            =	{CTE}? {PUNTO} {DIGITO}*//[0]{0,1}[1-9]{0,11}[.][0-9]{0,11
 {PUNTO}		        {	return symbol(ParserSym.PUNTO,yytext()); 		}
 {MAIN}		        {	return symbol(ParserSym.MAIN,yytext());			}
 {STRING}		    {	return symbol(ParserSym.STRING,yytext());		}
+{CADENA}            {   return symbol(ParserSym.CADENA,yytext());       }
+
 {CORCH_ABRE}		{	return symbol(ParserSym.CORCH_ABRE,yytext());	}
 {CORCH_CIERRA}		{	return symbol(ParserSym.CORCH_CIERRA,yytext());	}
 {ASIGNACION}		{	return symbol(ParserSym.ASIGNACION,yytext());	}

@@ -28,6 +28,7 @@ terminal ASTERISCO;
 terminal SALTO_LINEA;
 terminal COMENTARIO_MULTI;
 terminal COMENTARIO_SINGLE;
+terminal CADENA;
 
 terminal CTE;
 terminal ID;
@@ -115,3 +116,4 @@ termino   ::= CTE {: System.out.println("Regla 10"); :};
 termino   ::= ID {: System.out.println("Regla 11"); :};
 termino   ::= CTE_REAL {: System.out.println("Regla 12"); :};
 termino   ::= PA expresion PC {: System.out.println("Regla 13"); :};
+factor    ::= CADENA {: System.out.println("Regla 14"); :}; //CADENA tipo de datos
