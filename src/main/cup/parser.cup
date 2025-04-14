@@ -29,6 +29,8 @@ terminal SALTO_LINEA;
 terminal COMENTARIO_MULTI;
 terminal COMENTARIO_SINGLE;
 terminal CADENA;
+terminal READ;
+terminal WRITE;
 
 terminal CTE;
 terminal ID;
@@ -69,6 +71,8 @@ non terminal condicion;
 non terminal comparacion;
 non terminal comparador;
 non terminal iteracion;
+non terminal read;
+non terminal write;
 
 // Start Symbol Definition
 start with programa;
@@ -117,3 +121,12 @@ termino   ::= ID {: System.out.println("Regla 11"); :};
 termino   ::= CTE_REAL {: System.out.println("Regla 12"); :};
 termino   ::= PA expresion PC {: System.out.println("Regla 13"); :};
 factor    ::= CADENA {: System.out.println("Regla 14"); :}; //CADENA tipo de datos
+
+//E-S
+read    ::= READ PA ID PC {: System.out.println("READ"); :};
+write   ::= WRITE PA ID PC {: System.out.println("WRITE"); :};
+write   ::= WRITE PA TEXTO PC {: System.out.println("WRITE"); :};
+
+//SLICEANDCONCAT
+termino ::= SLICEANDCONCAT PA expresion COMA expresion COMA expresion PC {: System.out.println("Regla SLICEANDCONCAT"); :};
+
