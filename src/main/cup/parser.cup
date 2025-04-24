@@ -57,6 +57,7 @@ terminal CTE_REAL;
 terminal INIT;
 terminal SLICEANDCONCAT;
 terminal NEGCALCULATION;
+terminal DP;
 
 // Non Terminals
 non terminal programa;
@@ -73,6 +74,11 @@ non terminal comparador;
 non terminal iteracion;
 non terminal read;
 non terminal write;
+non terminal bloque_init;
+non terminal decs;
+non terminal dec;
+non terminal listaId;
+non terminal tipoDato;
 
 // Start Symbol Definition
 start with programa;
@@ -130,3 +136,14 @@ write   ::= WRITE PA TEXTO PC {: System.out.println("WRITE"); :};
 //SLICEANDCONCAT
 termino ::= SLICEANDCONCAT PA expresion COMA expresion COMA expresion PC {: System.out.println("Regla SLICEANDCONCAT"); :};
 
+//INIT - Declaracion de variables
+sentencia ::= bloque_init{: System.out.println("sentencia -> bloque inicializacion"); :};
+bloque_init ::= INIT LLA decs LLC{: System.out.println("bloque_init -> {declaraciones}"); :};
+decs ::= dec decs{: System.out.println("recursividad de lineas de declaraciones"); :};
+decs ::= dec{: System.out.println("unica linea de declaracion"); :};
+dec ::= listaId DP tipoDato;
+listaId ::= ID COMA listaId;
+listaId ::= ID;
+tipoDato ::= FLOAT;
+tipoDato ::= INTEGER;
+tipoDato ::= STRING;

@@ -112,6 +112,7 @@ MAYOR               =	">"
 LLA     			=	"{"
 LLC   				=	"}"
 CTE_REAL            =	{CTE}? {PUNTO} {DIGITO}*//[0]{0,1}[1-9]{0,11}[.][0-9]{0,11}
+DP                  =   ":"
 
 %%
 /* keywords */
@@ -188,6 +189,7 @@ CTE_REAL            =	{CTE}? {PUNTO} {DIGITO}*//[0]{0,1}[1-9]{0,11}[.][0-9]{0,11
 {OP_DIV}			{	return symbol(ParserSym.OP_DIV, yytext());		}
 {PA}				{	return symbol(ParserSym.PA, yytext());			}
 {PC}				{	return symbol(ParserSym.PC, yytext());			}
+{DP}                {   return symbol(ParserSym.DP, yytext());          }
 
 "\n"				{}
 "\t"				{}
