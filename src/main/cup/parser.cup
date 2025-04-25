@@ -43,7 +43,6 @@ terminal PC;
 terminal IF;
 terminal WHILE;
 terminal COMA;
-terminal TEXTO;
 terminal DISTINTO;
 terminal NEGADO;
 terminal IGUAL_IGUAL;
@@ -80,6 +79,10 @@ non terminal decs;
 non terminal dec;
 non terminal listaId;
 non terminal tipoDato;
+non terminal listaExpresiones;
+non terminal listaSlice;
+non terminal sliceArg;
+non terminal restoSliceArgs;
 
 // Start Symbol Definition
 start with inicial;
@@ -96,6 +99,7 @@ sentencia ::= iteracion {: System.out.println("sentencia ::= seleccion"); :};
 
 
 asignacion ::= ID ASIGNACION expresion {: System.out.println("Regla 4"); :};
+asignacion ::= ID ASIGNACION expresion PUNTO_COMA {: System.out.println("Regla 4 con ;"); :};
 
 iteracion 	::= 	WHILE:_while PA condicion PC LLA programa LLC {: System.out.println("WHILE:_while PA condicion PC LLA programa LLC"); :};
 ifHeader   ::= 	IF PA condicion PC {: System.out.println("IF PA condicion PC"); :};
@@ -133,12 +137,20 @@ termino   ::= PA expresion PC {: System.out.println("Regla 13"); :};
 termino   ::= CADENA {: System.out.println("Regla 14"); :}; //CADENA tipo de datos
 
 //E-S
-read    ::= READ PA ID PC {: System.out.println("READ"); :};
-write   ::= WRITE PA ID PC {: System.out.println("WRITE"); :};
-write   ::= WRITE PA TEXTO PC {: System.out.println("WRITE"); :};
+sentencia ::= read {: System.out.println("INICIO READ"); :};
+read    ::= SYS_IN PA ID PC {: System.out.println("READ"); :};
+sentencia ::= write {: System.out.println("INICIO WRITE"); :};
+write   ::= SYS_OUT PA ID PC {: System.out.println("WRITE"); :};
+write   ::= SYS_OUT PA CADENA PC {: System.out.println("WRITE"); :};
 
 //SLICEANDCONCAT
-termino ::= SLICEANDCONCAT PA expresion COMA expresion COMA expresion PC {: System.out.println("Regla SLICEANDCONCAT"); :};
+termino ::= SLICEANDCONCAT PA CTE COMA CTE COMA CADENA COMA CADENA COMA CTE PC {: System.out.println("SLICEANDCONCAT válido"); :};
+
+//NEGCALCULATION
+termino ::= NEGCALCULATION PA listaExpresiones PC {: System.out.println("Regla NEGCALCULATION"); :};
+listaExpresiones ::= expresion;
+listaExpresiones ::= listaExpresiones COMA expresion;
+
 
 //INIT - Declaracion de variables
 sentencia ::= bloque_init{: System.out.println("sentencia -> bloque inicializacion"); :};

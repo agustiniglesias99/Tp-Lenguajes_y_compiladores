@@ -102,7 +102,6 @@ PC			        =	")"
 IF                  =	"if"
 WHILE               =	"while"
 COMA                =	","
-TEXTO               =	[\"].*[\"]
 DISTINTO            =	"!="
 NEGADO				=	"NOT"
 MENOR_IGUAL         =	"<="
@@ -159,13 +158,6 @@ DP                  =   ":"
       					guardarCTE("float");
       					return symbol(ParserSym.CTE_REAL, yytext());
 	  				}
-{TEXTO}			    {
-      					if(!esLongitudStringValida())
-      						throw new InvalidLengthException("\"" + yytext() + "\""+ " excede el maximo permitido");
-						guardarCTE("string");
-						return symbol(ParserSym.TEXTO, yytext());
-	  				}
-
 {SLICEANDCONCAT}    {   return symbol(ParserSym.SLICEANDCONCAT, yytext()); }
 
 {NEGCALCULATION}    {   return symbol(ParserSym.NEGCALCULATION, yytext()); }
