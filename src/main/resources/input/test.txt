@@ -1,1 +1,81 @@
-c:=d*(e- 21)/4
+init {
+    a1, b1 : float
+    variable1 : int
+    p1, p2, p3 : string
+}
+
+#+ float fuera de rango +#
+#+ c := 1000000000000000000000000000000000000001.0 +#
+
+#+ int fuera de rango (negativo) +#
+#+ a := -32770 +#
+
+#+ int fuera de rango (positivo) +#
+#+ s := 32769 +#
+
+#+ while +#
+a := 1
+b := 3
+while (a > b)
+{
+    write("a es mas grande que b")
+    a := a + 1
+}
+
+#+ if / else +#
+if (a > b)
+{
+    write("a es mas grande que b")
+}
+else
+{
+    write("a es mas chico o igual a b")
+}
+
+#+ asignaciones +#
+a := 99999.99
+a := 99.
+a := .9999
+
+b := "@sdADaSjfla%dfg"
+b := "asldk  fh sjf"
+
+#+ Operaciones ariteticas +#
+x := 27 - c
+x := r + 500
+x := 34 * 3
+x := z / f
+
+#+ E/S +#
+read(base) #+ base es una variable +#
+
+write("ewr")  #+ “ewr” es una cte string +#
+write(var1)  #+ var1 es una variable numérica definida previamente +#
+
+#+ Condiciones +#
+a := 1
+b := 1
+c := 2
+
+if (a > b AND c > b)
+{
+    write("a es mas grande que b y c es mas grande que b")
+}
+
+if (a > b OR c > b)
+{
+    write("a es mas grande que b o c es mas grande que b")
+}
+
+if (NOT a > b)
+{
+    write("a no es mas grande que b")
+}
+
+#+ negativeCalculation +#
+a := 4.1
+b := -1.5
+x := negativeCalculation(3.5, -2.0, a, b, -3.0)
+
+#+ sliceAndConcat +#
+y := sliceAndConcat(3, 6, "amarillo", "verde", 0)

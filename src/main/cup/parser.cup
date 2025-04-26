@@ -87,19 +87,19 @@ non terminal restoSliceArgs;
 // Start Symbol Definition
 start with inicial;
 
-inicial  ::= programa;
+inicial  ::= bloque_init programa;
 inicial  ::=         ;
 
-programa ::= programa sentencia {: System.out.println("Regla 1"); :};
-programa ::= sentencia {: System.out.println("Regla 2"); :};
+programa ::= programa sentencia {: System.out.println("programa => programa sentencia"); :};
+programa ::= sentencia {: System.out.println("programa => sentencia"); :};
 
-sentencia ::= asignacion {: System.out.println("Regla 3"); :};
-sentencia ::= seleccion {: System.out.println("sentencia ::= seleccion"); :};
-sentencia ::= iteracion {: System.out.println("sentencia ::= seleccion"); :};
+sentencia ::= asignacion {: System.out.println("sentencia => asignacion"); :};
+sentencia ::= seleccion {: System.out.println("sentencia => seleccion"); :};
+sentencia ::= iteracion {: System.out.println("sentencia => seleccion"); :};
 
 
-asignacion ::= ID ASIGNACION expresion {: System.out.println("Regla 4"); :};
-asignacion ::= ID ASIGNACION expresion PUNTO_COMA {: System.out.println("Regla 4 con ;"); :};
+asignacion ::= ID ASIGNACION expresion {: System.out.println("asignacion => id asignacion expresion"); :};
+asignacion ::= ID ASIGNACION expresion PUNTO_COMA {: System.out.println("asignacion => id asignacion expresion;"); :};
 
 iteracion 	::= 	WHILE:_while PA condicion PC LLA programa LLC {: System.out.println("WHILE:_while PA condicion PC LLA programa LLC"); :};
 ifHeader   ::= 	IF PA condicion PC {: System.out.println("IF PA condicion PC"); :};
@@ -122,19 +122,19 @@ comparador  ::= 	MENOR_IGUAL:comp				{: System.out.println("MENOR_IGUAL:comp"); 
 comparador  ::= 	MAYOR:comp						{: System.out.println("MAYOR:comp"); :};
 comparador  ::= 	MENOR:comp						{: System.out.println("MENOR:comp"); :};
 
-expresion ::= expresion OP_SUM factor {: System.out.println("Regla 5"); :};
-expresion ::= expresion OP_RES factor {: System.out.println("Regla 6"); :};
-expresion ::= factor {: System.out.println("Regla 7"); :};
+expresion ::= expresion OP_SUM factor {: System.out.println("expresion SUMA factor"); :};
+expresion ::= expresion OP_RES factor {: System.out.println("expresion RESTA factor"); :};
+expresion ::= factor {: System.out.println("expresion => factor"); :};
 
-factor    ::= factor OP_MUL termino {: System.out.println("Regla 8"); :};
-factor    ::= factor OP_DIV termino {: System.out.println("Regla 9"); :};
-factor    ::= termino;
+factor    ::= factor OP_MUL termino {: System.out.println("factor MULTI termino"); :};
+factor    ::= factor OP_DIV termino {: System.out.println("factor DIV termino"); :};
+factor    ::= termino {: System.out.println("factor => termino"); :};
 
-termino   ::= CTE {: System.out.println("Regla 10"); :};
-termino   ::= ID {: System.out.println("Regla 11"); :};
-termino   ::= CTE_REAL {: System.out.println("Regla 12"); :};
-termino   ::= PA expresion PC {: System.out.println("Regla 13"); :};
-termino   ::= CADENA {: System.out.println("Regla 14"); :}; //CADENA tipo de datos
+termino   ::= CTE {: System.out.println("CONSTANTE"); :};
+termino   ::= ID {: System.out.println("IDENTIFICADOR"); :};
+termino   ::= CTE_REAL {: System.out.println("CONSTANTE REAL"); :};
+termino   ::= PA expresion PC {: System.out.println("( expresion )"); :};
+termino   ::= CADENA {: System.out.println("CADENA"); :};
 
 //E-S
 sentencia ::= read {: System.out.println("INICIO READ"); :};
@@ -144,22 +144,22 @@ write   ::= SYS_OUT PA ID PC {: System.out.println("WRITE"); :};
 write   ::= SYS_OUT PA CADENA PC {: System.out.println("WRITE"); :};
 
 //SLICEANDCONCAT
-termino ::= SLICEANDCONCAT PA CTE COMA CTE COMA CADENA COMA CADENA COMA CTE PC {: System.out.println("SLICEANDCONCAT válido"); :};
+termino ::= SLICEANDCONCAT PA CTE COMA CTE COMA CADENA COMA CADENA COMA CTE PC {: System.out.println("termino => SLICEANDCONCAT PA CTE COMA CTE COMA CADENA COMA CADENA COMA CTE PC"); :};
 
 //NEGCALCULATION
-termino ::= NEGCALCULATION PA listaExpresiones PC {: System.out.println("Regla NEGCALCULATION"); :};
-listaExpresiones ::= expresion;
-listaExpresiones ::= listaExpresiones COMA expresion;
-
+termino ::= NEGCALCULATION PA listaExpresiones PC {: System.out.println("termino => NEGCALCULATION PA listaExpresiones PC"); :};
+listaExpresiones ::= listaExpresiones COMA expresion {: System.out.println("listaExpresiones => listaExpresiones COMA expresion"); :};
+listaExpresiones ::= expresion {: System.out.println("listaExpresiones => expresion"); :};
 
 //INIT - Declaracion de variables
-sentencia ::= bloque_init{: System.out.println("sentencia -> bloque inicializacion"); :};
-bloque_init ::= INIT LLA decs LLC{: System.out.println("bloque_init -> {declaraciones}"); :};
-decs ::= dec decs{: System.out.println("recursividad de lineas de declaraciones"); :};
-decs ::= dec{: System.out.println("unica linea de declaracion"); :};
-dec ::= listaId DP tipoDato;
-listaId ::= ID COMA listaId;
-listaId ::= ID;
-tipoDato ::= FLOAT;
-tipoDato ::= INTEGER;
-tipoDato ::= STRING;
+bloque_init ::= INIT LLA decs LLC{: System.out.println("bloque_init => INIT LLA decs LLC"); :};
+listaId ::= listaId COMA ID {: System.out.println("listaId => listaId COM ID"); :};
+listaId ::= ID {: System.out.println("listaId => ID"); :};
+
+decs ::= decs dec {: System.out.println("decs => decs dec"); :};
+decs ::= dec{: System.out.println("decs => dec"); :};
+dec ::= listaId DP tipoDato {: System.out.println("dec => listaId DP tipoDato"); :};
+
+tipoDato ::= FLOAT {: System.out.println("tipoDato => float"); :};
+tipoDato ::= INTEGER {: System.out.println("tipoDato => int"); :};
+tipoDato ::= STRING {: System.out.println("tipoDato => string"); :};
