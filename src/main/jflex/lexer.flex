@@ -42,6 +42,7 @@ import lyc.compiler.constants.Constants;import lyc.compiler.model.*;import lyc.c
 		return cteFloat >= Constants.MIN_FLOAT_CONSTANT && cteFloat <= Constants.MAX_FLOAT_CONSTANT;
 	}
 
+
 	private void guardarToken() {
 		SymbolTableGenerator.getInstance().addToken(yytext());
 	}
@@ -124,7 +125,12 @@ DP                  =   ":"
 {PUNTO}		        {	return symbol(ParserSym.PUNTO,yytext()); 		}
 {MAIN}		        {	return symbol(ParserSym.MAIN,yytext());			}
 {STRING}		    {	return symbol(ParserSym.STRING,yytext());		}
-{CADENA}            {   return symbol(ParserSym.CADENA,yytext());       }
+{CADENA}            {
+                        if(!esLongitudStringValida())
+                        throw new InvalidIntegerException(yytext() + " supera la cantidad maxima de caracteres (50).");
+                        guardarCTE("string");
+                        return symbol(ParserSym.CADENA,yytext());
+                    }
 
 {CORCH_ABRE}		{	return symbol(ParserSym.CORCH_ABRE,yytext());	}
 {CORCH_CIERRA}		{	return symbol(ParserSym.CORCH_CIERRA,yytext());	}

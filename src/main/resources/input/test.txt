@@ -13,6 +13,10 @@ init {
 #+ int fuera de rango (positivo) +#
 #+ s := 32769 +#
 
+#+ string fuera de rango +#
+
+#+ s := "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz" +#
+
 #+ while +#
 a := 1
 b := 3
