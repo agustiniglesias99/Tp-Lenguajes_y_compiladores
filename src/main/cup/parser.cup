@@ -1,9 +1,37 @@
 package lyc.compiler;
 
 import java_cup.runtime.*;
+import
 
 class Parser;
 
+parser code {:
+    public class Terceto {
+        private int index;
+        private String operador;
+        private String operando1;
+        private String operando2;
+
+        public Terceto(int index, String operador, String operando1, String operando2) {
+            this.index = index;
+            this.operador = operador;
+            this.operando1 = operando1;
+            this.operando2 = operando2;
+        }
+
+        public String toString() {
+            return "[" + index + "] (" + operador + ", " + operando1 + ", " + operando2 + ")";
+        }
+    }
+
+    public static List<Terceto> tercetos = new ArrayList<>();
+    private static int tercetoIndex = 0;
+
+    public static int addTerceto(String op, String arg1, String arg2) {
+        tercetos.add(new Terceto(tercetoIndex, op, arg1, arg2));
+        return tercetoIndex++;
+    }
+:};
 
 // Terminals
 terminal NUMERAL;
@@ -98,7 +126,13 @@ sentencia ::= seleccion {: System.out.println("sentencia => seleccion"); :};
 sentencia ::= iteracion {: System.out.println("sentencia => seleccion"); :};
 
 
-asignacion ::= ID ASIGNACION expresion {: System.out.println("asignacion => id asignacion expresion"); :};
+asignacion ::= ID ASIGNACION expresion
+    {:
+        int idx = Parser.addTerceto(ASGINACION, expresion, ID);
+        System.out.println("Terceto generado: " + Parser.tercetos.get(idx));
+        System.out.println("asignacion => id asignacion expresion");
+    :};
+
 asignacion ::= ID ASIGNACION expresion PUNTO_COMA {: System.out.println("asignacion => id asignacion expresion;"); :};
 
 iteracion 	::= 	WHILE:_while PA condicion PC LLA programa LLC {: System.out.println("WHILE:_while PA condicion PC LLA programa LLC"); :};
