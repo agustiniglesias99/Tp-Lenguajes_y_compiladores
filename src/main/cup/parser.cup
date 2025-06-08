@@ -1,36 +1,11 @@
 package lyc.compiler;
 
 import java_cup.runtime.*;
-import
+import lyc.compiler.files.*;
 
 class Parser;
-
 parser code {:
-    public class Terceto {
-        private int index;
-        private String operador;
-        private String operando1;
-        private String operando2;
-
-        public Terceto(int index, String operador, String operando1, String operando2) {
-            this.index = index;
-            this.operador = operador;
-            this.operando1 = operando1;
-            this.operando2 = operando2;
-        }
-
-        public String toString() {
-            return "[" + index + "] (" + operador + ", " + operando1 + ", " + operando2 + ")";
-        }
-    }
-
-    public static List<Terceto> tercetos = new ArrayList<>();
-    private static int tercetoIndex = 0;
-
-    public static int addTerceto(String op, String arg1, String arg2) {
-        tercetos.add(new Terceto(tercetoIndex, op, arg1, arg2));
-        return tercetoIndex++;
-    }
+    private IntermediateCodeGenerator intermediateCode = IntermediateCodeGenerator.getInstance();
 :};
 
 // Terminals
@@ -115,7 +90,7 @@ non terminal restoSliceArgs;
 // Start Symbol Definition
 start with inicial;
 
-inicial  ::= bloque_init programa;
+inicial  ::=  programa;
 inicial  ::=         ;
 
 programa ::= programa sentencia {: System.out.println("programa => programa sentencia"); :};
@@ -126,14 +101,13 @@ sentencia ::= seleccion {: System.out.println("sentencia => seleccion"); :};
 sentencia ::= iteracion {: System.out.println("sentencia => seleccion"); :};
 
 
-asignacion ::= ID ASIGNACION expresion
-    {:
-        int idx = Parser.addTerceto(ASGINACION, expresion, ID);
-        System.out.println("Terceto generado: " + Parser.tercetos.get(idx));
-        System.out.println("asignacion => id asignacion expresion");
-    :};
+asignacion ::= ID ASIGNACION expresion{: System.out.println("asignacion => id asignacion expresion"); :};
 
-asignacion ::= ID ASIGNACION expresion PUNTO_COMA {: System.out.println("asignacion => id asignacion expresion;"); :};
+asignacion ::= ID:id ASIGNACION expresion PUNTO_COMA {:
+    Integer intA = intermediateCode.addTerceto("=", id.toString(), intermediateCode.getIndexDraw("Eind"));
+    intermediateCode.addIndex("Aind", intA);
+    System.out.println("asignacion => id asignacion expresion;");
+:};
 
 iteracion 	::= 	WHILE:_while PA condicion PC LLA programa LLC {: System.out.println("WHILE:_while PA condicion PC LLA programa LLC"); :};
 ifHeader   ::= 	IF PA condicion PC {: System.out.println("IF PA condicion PC"); :};
@@ -156,19 +130,54 @@ comparador  ::= 	MENOR_IGUAL:comp				{: System.out.println("MENOR_IGUAL:comp"); 
 comparador  ::= 	MAYOR:comp						{: System.out.println("MAYOR:comp"); :};
 comparador  ::= 	MENOR:comp						{: System.out.println("MENOR:comp"); :};
 
-expresion ::= expresion OP_SUM factor {: System.out.println("expresion SUMA factor"); :};
-expresion ::= expresion OP_RES factor {: System.out.println("expresion RESTA factor"); :};
-expresion ::= factor {: System.out.println("expresion => factor"); :};
+expresion ::= expresion OP_SUM factor {:
+    Integer intE = intermediateCode.addTerceto("+", intermediateCode.getIndexDraw("Eind"), intermediateCode.getIndexDraw("Find"));
+    intermediateCode.addIndex("Eind", intE);
+    System.out.println("expresion SUMA factor");
+:};
+expresion ::= expresion OP_RES factor {:
+    Integer intE = intermediateCode.addTerceto("-", intermediateCode.getIndexDraw("Eind"), intermediateCode.getIndexDraw("Find"));
+    intermediateCode.addIndex("Eind", intE);
+    System.out.println("expresion RESTA factor");
+:};
+expresion ::= factor {:
+    Integer tercetoNum = intermediateCode.getIndex("Find");
+    System.out.println("El valor que tiene Find es: " + tercetoNum);
+    intermediateCode.addIndex("Eind", tercetoNum);
+    System.out.println("expresion => factor");
+:};
 
-factor    ::= factor OP_MUL termino {: System.out.println("factor MULTI termino"); :};
-factor    ::= factor OP_DIV termino {: System.out.println("factor DIV termino"); :};
-factor    ::= termino {: System.out.println("factor => termino"); :};
+factor    ::= factor OP_MUL termino {:
+    Integer intF = intermediateCode.addTerceto("*", intermediateCode.getIndexDraw("Find"), intermediateCode.getIndexDraw("Tind"));
+    intermediateCode.addIndex("Find", intF);
+    System.out.println("factor MULTI termino");
+:};
+factor    ::= factor OP_DIV termino {:
+    Integer intF = intermediateCode.addTerceto("/", intermediateCode.getIndexDraw("Find"), intermediateCode.getIndexDraw("Tind"));
+    intermediateCode.addIndex("Find", intF);
+    System.out.println("factor DIV termino");
+:};
+factor    ::= termino {:
+    Integer tercetoNum = intermediateCode.getIndex("Tind");
+    intermediateCode.addIndex("Find", tercetoNum);
+    System.out.println("factor => termino");
+:};
 
-termino   ::= CTE {: System.out.println("CONSTANTE"); :};
-termino   ::= ID {: System.out.println("IDENTIFICADOR"); :};
-termino   ::= CTE_REAL {: System.out.println("CONSTANTE REAL"); :};
+termino   ::= CTE:cte {:
+    Integer intT = intermediateCode.addTerceto(cte.toString(), "_", "_");
+    System.out.println("Voy a poner en Tind: " + intT);
+    intermediateCode.addIndex("Tind", intT);
+    System.out.println("CONSTANTE");
+:};
+termino   ::= ID:id {:
+    Integer intT = intermediateCode.addTerceto(id.toString(), "_", "_");
+    System.out.println("Voy a poner en Tind: " + intT);
+    intermediateCode.addIndex("Tind", intT);
+    System.out.println("IDENTIFICADOR");
+:};
+termino   ::= CTE_REAL:cte {: System.out.println("CONSTANTE REAL"); :};
 termino   ::= PA expresion PC {: System.out.println("( expresion )"); :};
-termino   ::= CADENA {: System.out.println("CADENA"); :};
+termino   ::= CADENA:cadena {: System.out.println("CADENA"); :};
 
 //E-S
 sentencia ::= read {: System.out.println("INICIO READ"); :};
