@@ -1,4 +1,4 @@
 init{
     a,b,c : int
 }
-a := negativeCalculation(-4.0, 2.3, c, 5.6)
+c := sliceAndConcat(3, 6, "amarillo", "verde", 0)

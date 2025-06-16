@@ -31,7 +31,6 @@ public class IntermediateCodeGenerator implements FileGenerator {
     public void addIndex(String index, Integer nroTerceto) {
         this.indices.put(index, nroTerceto);
     }
-
     public String getIndexDraw(String idx){
         Integer nroTerceto = this.indices.get(idx);
         return "[" + nroTerceto + "]";

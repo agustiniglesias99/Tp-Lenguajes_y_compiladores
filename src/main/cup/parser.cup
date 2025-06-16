@@ -220,7 +220,36 @@ write   ::= SYS_OUT PA CADENA:cadena PC {:
 :};
 
 //SLICEANDCONCAT
-termino ::= SLICEANDCONCAT PA CTE COMA CTE COMA CADENA COMA CADENA COMA CTE PC {: System.out.println("termino => SLICEANDCONCAT PA CTE COMA CTE COMA CADENA COMA CADENA COMA CTE PC"); :};
+termino ::= SLICEANDCONCAT PA CTE:inicio COMA CTE:fin COMA CADENA:palabra1 COMA CADENA:palabra2 COMA CTE:concatenar PC {:
+    intermediateCode.addTerceto("=", "@res", "\"\"");
+    intermediateCode.addTerceto("=", "@resParcial", "\"\"");
+    intermediateCode.addTerceto("=", "@subcadena", "\"\"");
+    intermediateCode.addTerceto("=", "@auxIni", inicio.toString());
+    intermediateCode.addTerceto("=", "@auxFin", fin.toString());
+    intermediateCode.addTerceto("=", "@auxPal1", palabra1.toString());
+    intermediateCode.addTerceto("=", "@auxPal2", palabra2.toString());
+    intermediateCode.addTerceto("=", "@auxConcat", concatenar.toString());
+    int cmp = intermediateCode.addTerceto("CMP", "@auxConcat", "1");
+    intermediateCode.addTerceto("BNE", "[" + (cmp + 8)  + "]", "_");
+
+    int limites = intermediateCode.addTerceto("@auxIni", "@auxFin", "_");
+    int corte = intermediateCode.addTerceto("SUBSTRING", "@auxPal1", "[" + limites + "]");
+    intermediateCode.addTerceto("=", "@subcadena", "[" + corte + "]");
+    int concat = intermediateCode.addTerceto("CONCAT", "@auxPal2", "@subcadena");
+    int finResParcial = intermediateCode.addTerceto("=", "@resParcial", "[" + concat + "]");
+    intermediateCode.addTerceto("BI", "["+ (finResParcial + 7) +"]", "_");
+
+    int limites2 = intermediateCode.addTerceto("@auxIni", "@auxFin", "_");
+    int corte2 = intermediateCode.addTerceto("SUBSTRING", "@auxPal2", "[" + limites2 + "]");
+    intermediateCode.addTerceto("=", "@subcadena", "[" + corte2 + "]");
+    int concat2 = intermediateCode.addTerceto("CONCAT", "@auxPal1", "@subcadena");
+    int finResParcial2 = intermediateCode.addTerceto("=", "@resParcial", "[" + concat2 + "]");
+
+    int auxRes  = intermediateCode.addTerceto("=", "@res", "@resParcial");
+    intermediateCode.addIndex("Tind", auxRes);
+
+    System.out.println("termino => SLICEANDCONCAT PA CTE COMA CTE COMA CADENA COMA CADENA COMA CTE PC");
+:};
 
 //NEGCALCULATION
 termino ::= NEGCALCULATION PA listaExpresiones PC {:
