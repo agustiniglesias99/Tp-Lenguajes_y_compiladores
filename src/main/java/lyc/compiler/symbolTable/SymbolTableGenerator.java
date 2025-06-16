@@ -2,11 +2,14 @@ package lyc.compiler.symbolTable;
 
 import lyc.compiler.files.FileGenerator;
 import lyc.compiler.model.CompilerException;
+import lyc.compiler.model.DeclarationVariableException;
+import lyc.compiler.model.DuplicateVariableException;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletionException;
 
 public class SymbolTableGenerator implements FileGenerator {
     private static SymbolTableGenerator symbolTable;
@@ -40,6 +43,21 @@ public class SymbolTableGenerator implements FileGenerator {
         if(!this.symbols.containsKey(token)) {
             SymbolTableData data = new SymbolTableData(dataType,token,Integer.toString(token.length()-1));
             this.symbols.put("_" + token,data);
+        }
+    }
+
+    public void addDataType(String id, String dataType) throws CompilerException {
+        SymbolTableData data = this.symbols.get(id);
+        if(data.getType() != null){
+            throw new DuplicateVariableException("Variable " + id + " ya definida");
+        }
+        data.setType(dataType);
+    }
+
+    public void verifyType(String id) throws CompilerException {
+        SymbolTableData data = this.symbols.get(id);
+        if(data.getType() == null){
+            throw new DeclarationVariableException("Variable " + id + " sin declarar");
         }
     }
 

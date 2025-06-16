@@ -1,1 +1,4 @@
-a := 3 + b;
+init{
+    a,b,c : int
+}
+a := negativeCalculation(-4.0, 2.3, c, 5.6)

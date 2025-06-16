@@ -1,11 +1,17 @@
 package lyc.compiler;
 
 import java_cup.runtime.*;
-import lyc.compiler.files.*;
+import lyc.compiler.files.IntermediateCodeGenerator;
+import lyc.compiler.symbolTable.SymbolTableGenerator;
+import java.util.Stack;
 
 class Parser;
 parser code {:
     private IntermediateCodeGenerator intermediateCode = IntermediateCodeGenerator.getInstance();
+    private Stack<String> pilaInit = new Stack<>();
+    private SymbolTableGenerator symbolTable = SymbolTableGenerator.getInstance();
+    private String tipoDatoAux = "";
+    private String variableNegCalc = "";
 :};
 
 // Terminals
@@ -86,11 +92,11 @@ non terminal listaExpresiones;
 non terminal listaSlice;
 non terminal sliceArg;
 non terminal restoSliceArgs;
-
+non terminal variableNegCalc;
 // Start Symbol Definition
 start with inicial;
 
-inicial  ::=  programa;
+inicial  ::=  bloque_init programa;
 inicial  ::=         ;
 
 programa ::= programa sentencia {: System.out.println("programa => programa sentencia"); :};
@@ -100,17 +106,14 @@ sentencia ::= asignacion {: System.out.println("sentencia => asignacion"); :};
 sentencia ::= seleccion {: System.out.println("sentencia => seleccion"); :};
 sentencia ::= iteracion {: System.out.println("sentencia => seleccion"); :};
 
-
-asignacion ::= ID ASIGNACION expresion{: System.out.println("asignacion => id asignacion expresion"); :};
-
-asignacion ::= ID:id ASIGNACION expresion PUNTO_COMA {:
+asignacion ::= ID:id {: symbolTable.verifyType(id.toString()); :} ASIGNACION expresion {:
     Integer intA = intermediateCode.addTerceto("=", id.toString(), intermediateCode.getIndexDraw("Eind"));
     intermediateCode.addIndex("Aind", intA);
     System.out.println("asignacion => id asignacion expresion;");
 :};
 
 iteracion 	::= 	WHILE:_while PA condicion PC LLA programa LLC {: System.out.println("WHILE:_while PA condicion PC LLA programa LLC"); :};
-ifHeader   ::= 	IF PA condicion PC {: System.out.println("IF PA condicion PC"); :};
+ifHeader    ::= 	IF PA condicion PC {: System.out.println("IF PA condicion PC"); :};
 
 seleccion	::=		ifHeader LLA programa LLC {: System.out.println("ifHeader LLA programa LLC"); :};
 seleccion	::= 	ifHeader LLA programa LLC ELSE LLA programa LLC {: System.out.println("ifHeader LLA programa LLC ELSE LLA programa LLC"); :};
@@ -142,7 +145,6 @@ expresion ::= expresion OP_RES factor {:
 :};
 expresion ::= factor {:
     Integer tercetoNum = intermediateCode.getIndex("Find");
-    System.out.println("El valor que tiene Find es: " + tercetoNum);
     intermediateCode.addIndex("Eind", tercetoNum);
     System.out.println("expresion => factor");
 :};
@@ -165,44 +167,149 @@ factor    ::= termino {:
 
 termino   ::= CTE:cte {:
     Integer intT = intermediateCode.addTerceto(cte.toString(), "_", "_");
-    System.out.println("Voy a poner en Tind: " + intT);
     intermediateCode.addIndex("Tind", intT);
     System.out.println("CONSTANTE");
 :};
 termino   ::= ID:id {:
     Integer intT = intermediateCode.addTerceto(id.toString(), "_", "_");
-    System.out.println("Voy a poner en Tind: " + intT);
     intermediateCode.addIndex("Tind", intT);
     System.out.println("IDENTIFICADOR");
 :};
-termino   ::= CTE_REAL:cte {: System.out.println("CONSTANTE REAL"); :};
-termino   ::= PA expresion PC {: System.out.println("( expresion )"); :};
-termino   ::= CADENA:cadena {: System.out.println("CADENA"); :};
+termino   ::= CTE_REAL:cte {:
+     Integer intT = intermediateCode.addTerceto(cte.toString(), "_", "_");
+     intermediateCode.addIndex("Tind", intT);
+     System.out.println("CONSTANTE REAL");
+:};
+termino   ::= CADENA:cadena {:
+    Integer intT = intermediateCode.addTerceto(cadena.toString(), "_", "_");
+    intermediateCode.addIndex("Tind", intT);
+    System.out.println("CADENA");
+:};
+termino   ::= PA expresion PC {:
+    System.out.println("( expresion )");
+:};
 
 //E-S
-sentencia ::= read {: System.out.println("INICIO READ"); :};
-read    ::= SYS_IN PA ID PC {: System.out.println("READ"); :};
-sentencia ::= write {: System.out.println("INICIO WRITE"); :};
-write   ::= SYS_OUT PA ID PC {: System.out.println("WRITE"); :};
-write   ::= SYS_OUT PA CADENA PC {: System.out.println("WRITE"); :};
+sentencia ::= read {:
+    Integer tercetoNum = intermediateCode.getIndex("Rind");
+    intermediateCode.addIndex("Sind", tercetoNum);
+    System.out.println("INICIO READ");
+:};
+
+read    ::= SYS_IN PA ID:id {: symbolTable.verifyType(id.toString()); :} PC {:
+    int Rind = intermediateCode.addTerceto("read", id.toString(), "_");
+    intermediateCode.addIndex("Rind", Rind);
+    System.out.println("READ");
+:};
+
+sentencia ::= write {:
+    Integer tercetoNum = intermediateCode.getIndex("Wind");
+    intermediateCode.addIndex("Sind", tercetoNum);
+    System.out.println("INICIO WRITE");
+:};
+
+write   ::= SYS_OUT PA ID:id {: symbolTable.verifyType(id.toString()); :} PC {:
+    int Wind = intermediateCode.addTerceto("write", id.toString(), "_");
+    intermediateCode.addIndex("Wind", Wind);
+    System.out.println("WRITE");
+:};
+write   ::= SYS_OUT PA CADENA:cadena PC {:
+    int Wind = intermediateCode.addTerceto("write", cadena.toString(), "_");
+    intermediateCode.addIndex("Wind", Wind);
+    System.out.println("WRITE");
+:};
 
 //SLICEANDCONCAT
 termino ::= SLICEANDCONCAT PA CTE COMA CTE COMA CADENA COMA CADENA COMA CTE PC {: System.out.println("termino => SLICEANDCONCAT PA CTE COMA CTE COMA CADENA COMA CADENA COMA CTE PC"); :};
 
 //NEGCALCULATION
-termino ::= NEGCALCULATION PA listaExpresiones PC {: System.out.println("termino => NEGCALCULATION PA listaExpresiones PC"); :};
-listaExpresiones ::= listaExpresiones COMA expresion {: System.out.println("listaExpresiones => listaExpresiones COMA expresion"); :};
-listaExpresiones ::= expresion {: System.out.println("listaExpresiones => expresion"); :};
+termino ::= NEGCALCULATION PA listaExpresiones PC {:
+    int mod = intermediateCode.addTerceto("MOD", "@contNeg", "2");
+    int cmp = intermediateCode.addTerceto("CMP", "[" + mod +"]", "0");
+    intermediateCode.addTerceto("BNE", "[" + (cmp + 4)  +"]", "_");
+    int auxResP = intermediateCode.addTerceto("=", "@aux", "@sumaParcial");
+    intermediateCode.addTerceto("BI", "[" + (auxResP + 3)  +"]", "_");
+    intermediateCode.addTerceto("=", "@aux", "@mulParcial");
+
+    int auxRes  = intermediateCode.addTerceto("=", "@res", "@aux");
+    intermediateCode.addIndex("Tind", auxRes);
+
+    System.out.println("termino => NEGCALCULATION PA listaExpresiones PC");
+:};
+listaExpresiones ::= listaExpresiones COMA variableNegCalc {:
+    intermediateCode.addTerceto("=", "@aux", variableNegCalc);
+    int cmp = intermediateCode.addTerceto("CMP", "@aux", "0");
+    intermediateCode.addTerceto("BGE", "[" + (cmp + 8)  +"]", "_");
+
+    int sumaAux = intermediateCode.addTerceto("+", "@contNeg", "1");
+    intermediateCode.addTerceto("=", "@contNeg", "[" + sumaAux +"]");
+
+    int sumaPAux = intermediateCode.addTerceto("+", "@sumaParcial", "@aux");
+    intermediateCode.addTerceto("=", "@sumaParcial", "[" + sumaPAux +"]");
+
+    int mulPAux = intermediateCode.addTerceto("*", "@mulParcial", "@aux");
+    intermediateCode.addTerceto("=", "@mulParcial", "[" + mulPAux +"]");
+
+    System.out.println("listaExpresiones => listaExpresiones COMA expresion");
+:};
+listaExpresiones ::= variableNegCalc {:
+    intermediateCode.addTerceto("=", "@contNeg", "0");
+    intermediateCode.addTerceto("=", "@res", "0");
+    intermediateCode.addTerceto("=", "@sumaParcial", "0");
+    intermediateCode.addTerceto("=", "@mulParcial", "1");
+    intermediateCode.addTerceto("=", "@aux", variableNegCalc);
+    int cmp = intermediateCode.addTerceto("CMP", "@aux", "0");
+    intermediateCode.addTerceto("BGE", "[" + (cmp + 8)  +"]", "_");
+
+    int sumaAux = intermediateCode.addTerceto("+", "@contNeg", "1");
+    intermediateCode.addTerceto("=", "@contNeg", "[" + sumaAux +"]");
+
+    int sumaPAux = intermediateCode.addTerceto("+", "@sumaParcial", "@aux");
+    intermediateCode.addTerceto("=", "@sumaParcial", "[" + sumaPAux +"]");
+
+    int mulPAux = intermediateCode.addTerceto("*", "@mulParcial", "@aux");
+    intermediateCode.addTerceto("=", "@mulParcial", "[" + mulPAux +"]");
+
+    System.out.println("listaExpresiones => expresion");
+:};
+
+variableNegCalc ::= CTE:cte {: variableNegCalc = cte.toString(); :};
+variableNegCalc ::= CTE_REAL:cte_real {: variableNegCalc = cte_real.toString(); :};
+variableNegCalc ::= ID:id {: variableNegCalc = id.toString();  :};
 
 //INIT - Declaracion de variables
-bloque_init ::= INIT LLA decs LLC{: System.out.println("bloque_init => INIT LLA decs LLC"); :};
-listaId ::= listaId COMA ID {: System.out.println("listaId => listaId COM ID"); :};
-listaId ::= ID {: System.out.println("listaId => ID"); :};
+bloque_init ::= INIT LLA decs LLC {:
+    System.out.println("bloque_init => INIT LLA decs LLC");
+:};
 
 decs ::= decs dec {: System.out.println("decs => decs dec"); :};
-decs ::= dec{: System.out.println("decs => dec"); :};
-dec ::= listaId DP tipoDato {: System.out.println("dec => listaId DP tipoDato"); :};
+decs ::= dec {: System.out.println("decs => dec"); :};
+dec ::= listaId DP tipoDato:tp {:
+    while (!pilaInit.isEmpty()) {
+        String variable = pilaInit.pop();
+        symbolTable.addDataType(variable, tipoDatoAux);
+    }
+    System.out.println("dec => listaId DP tipoDato");
+:};
 
-tipoDato ::= FLOAT {: System.out.println("tipoDato => float"); :};
-tipoDato ::= INTEGER {: System.out.println("tipoDato => int"); :};
-tipoDato ::= STRING {: System.out.println("tipoDato => string"); :};
+listaId ::= listaId COMA ID:id {:
+    pilaInit.push(id.toString());
+    System.out.println("listaId => listaId COM ID");
+:};
+listaId ::= ID:id {:
+    pilaInit.push(id.toString());
+    System.out.println("listaId => ID");
+:};
+
+tipoDato ::= FLOAT:decimal {:
+    tipoDatoAux = decimal.toString();
+    System.out.println("tipoDato => float");
+:};
+tipoDato ::= INTEGER:entero {:
+    tipoDatoAux = entero.toString();
+    System.out.println("tipoDato => int");
+:};
+tipoDato ::= STRING:string {:
+    tipoDatoAux = string.toString();
+    System.out.println("tipoDato => string");
+:};
