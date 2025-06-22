@@ -1,4 +1,7 @@
 init{
     a,b,c : int
 }
-c := sliceAndConcat(3, 6, "amarillo", "verde", 0)
+b:=4
+while(b>1){
+    b:=b-1;
+}

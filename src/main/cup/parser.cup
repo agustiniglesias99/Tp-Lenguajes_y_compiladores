@@ -9,7 +9,10 @@ class Parser;
 parser code {:
     private IntermediateCodeGenerator intermediateCode = IntermediateCodeGenerator.getInstance();
     private Stack<String> pilaInit = new Stack<>();
+    private Stack<Integer> pilaWhile = new Stack<>();
+    private Stack<String> pilaExpresion = new Stack<>();
     private SymbolTableGenerator symbolTable = SymbolTableGenerator.getInstance();
+    private String cmpAux = "";
     private String tipoDatoAux = "";
     private String variableNegCalc = "";
 :};
@@ -112,29 +115,72 @@ asignacion ::= ID:id {: symbolTable.verifyType(id.toString()); :} ASIGNACION exp
     System.out.println("asignacion => id asignacion expresion;");
 :};
 
-iteracion 	::= 	WHILE:_while PA condicion PC LLA programa LLC {: System.out.println("WHILE:_while PA condicion PC LLA programa LLC"); :};
+iteracion 	::= 	WHILE:_while PA condicion PC LLA programa LLC {:
+    // evaluar condicion de while y salto
+    Integer intInicio = intermediateCode.getNextIndex();
+    // Paso 3: El terceto siguiente es el salto condicional (BF o similar)
+    Integer tercetoSalto = intermediateCode.getIndex("Condind") + 1;
+
+        // Paso 4: Acá ya se agregó el cuerpo del while como parte de 'programa'
+
+        // Paso 5: Agregar salto incondicional al inicio del while
+        intermediateCode.addTerceto("BI", intermediateCode.getIndexDraw("Condind"), "_");
+
+        // Paso 6: Completar salto falso al final del cuerpo
+        intermediateCode.getTercetoByIdx(pilaWhile.pop()).modificarTerceto(intermediateCode.getNextIndex());
+    System.out.println("WHILE:_while PA condicion PC LLA programa LLC");
+ :};
 ifHeader    ::= 	IF PA condicion PC {: System.out.println("IF PA condicion PC"); :};
 
-seleccion	::=		ifHeader LLA programa LLC {: System.out.println("ifHeader LLA programa LLC"); :};
+seleccion	::=		ifHeader LLA programa LLC {:
+
+    System.out.println("ifHeader LLA programa LLC");
+ :};
 seleccion	::= 	ifHeader LLA programa LLC ELSE LLA programa LLC {: System.out.println("ifHeader LLA programa LLC ELSE LLA programa LLC"); :};
 
-condicion 	::= 	comparacion AND:op comparacion {: System.out.println("comparacion AND:op comparacion"); :};
+condicion 	::= 	comparacion AND:op comparacion {:
+    System.out.println("comparacion AND:op comparacion");
+:};
 condicion 	::= 	comparacion OR:op comparacion  {: System.out.println("comparacion OR:op comparacion"); :};
-condicion	::= 	comparacion 				   {: System.out.println("comparacion"); :};
+condicion	::= 	comparacion 				   {:
+    Integer tercetoNum = intermediateCode.getIndex("Cmpind");
+    intermediateCode.addIndex("Condind", tercetoNum);
+    System.out.println("comparacion");
+:};
 
 condicion 	::=		NEGADO comparacion			   {: System.out.println("NEGADO condicion"); :};
 condicion	::= 	NEGADO expresion 			   {: System.out.println("NEGADO expresion"); :};
 
-comparacion ::= 	expresion comparador expresion  {: System.out.println("expresion comparador expresion"); :};
-comparador  ::= 	IGUAL_IGUAL:comp 				{: System.out.println("IGUAL_IGUAL:comp"); :};
-comparador  ::= 	DISTINTO:comp 					{: System.out.println("DISTINTO:comp"); :};
-comparador  ::= 	MAYOR_IGUAL:comp 				{: System.out.println("MAYOR_IGUAL:comp"); :};
-comparador  ::= 	MENOR_IGUAL:comp				{: System.out.println("MENOR_IGUAL:comp"); :};
-comparador  ::= 	MAYOR:comp						{: System.out.println("MAYOR:comp"); :};
-comparador  ::= 	MENOR:comp						{: System.out.println("MENOR:comp"); :};
+comparacion ::= 	expresion {: pilaExpresion.push(intermediateCode.getIndexDraw("Eind")); :} comparador expresion  {:
+    Integer intCmp = intermediateCode.addTerceto("cmp",pilaExpresion.pop(),intermediateCode.getIndexDraw("Eind"));
+    intermediateCode.addIndex("Cmpind",intCmp);
+    Integer intSalto = intermediateCode.addTerceto(cmpAux,"_","_");
+    pilaWhile.push(intSalto);
+    System.out.println("expresion comparador expresion");
+:};
+comparador  ::= 	IGUAL_IGUAL:comp 				{:
+    cmpAux = "BNE";
+    System.out.println("IGUAL_IGUAL:comp");
+:};
+comparador  ::= 	DISTINTO:comp 					{:
+    cmpAux = "BEQ";
+    System.out.println("DISTINTO:comp");
+ :};
+comparador  ::= 	MAYOR_IGUAL:comp 				{:
+    cmpAux = "BLT";
+    System.out.println("MAYOR_IGUAL:comp"); :};
+comparador  ::= 	MENOR_IGUAL:comp				{:
+    cmpAux = "BGT";
+    System.out.println("MENOR_IGUAL:comp"); :};
+comparador  ::= 	MAYOR:comp						{:
+    cmpAux = "BLE";
+    System.out.println("MAYOR:comp"); :};
+comparador  ::= 	MENOR:comp						{:
+    cmpAux = "BGE";
+    System.out.println("MENOR:comp"); :};
 
 expresion ::= expresion OP_SUM factor {:
-    Integer intE = intermediateCode.addTerceto("+", intermediateCode.getIndexDraw("Eind"), intermediateCode.getIndexDraw("Find"));
+    Integer intE = intermediateCode.addTerceto("+", intermediateCode.getIndexDraw("Eind"), intermediateCode.getIndexDraw("Find")); // (+,[2],[4])
     intermediateCode.addIndex("Eind", intE);
     System.out.println("expresion SUMA factor");
 :};

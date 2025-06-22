@@ -28,6 +28,10 @@ public class IntermediateCodeGenerator implements FileGenerator {
         return indexTerceto;
     }
 
+    public Terceto getTercetoByIdx(int idx){
+        return this.tercetos.get(idx);
+    }
+
     public void addIndex(String index, Integer nroTerceto) {
         this.indices.put(index, nroTerceto);
     }
@@ -38,6 +42,10 @@ public class IntermediateCodeGenerator implements FileGenerator {
 
     public Integer getIndex(String idx){
         return this.indices.get(idx);
+    }
+
+    public Integer getNextIndex(){
+        return this.tercetos.size();
     }
 
     @Override

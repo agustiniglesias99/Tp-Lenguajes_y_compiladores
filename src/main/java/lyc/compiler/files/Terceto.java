@@ -14,4 +14,8 @@ public class Terceto {
     public String toString() {
         return "(" + operador + ", " + operando1 + ", " + operando2 + ")";
     }
+
+    public void modificarTerceto(String operando1){
+        this.operando1 = operando1;
+    }
 }
