@@ -1,7 +1,12 @@
-init{
-    a,b,c : int
+init {
+    a,b,c,d : int
 }
-b:=4
-while(b>1){
-    b:=b-1;
+a := 4
+b := 3
+while(a>9){
+    d:=2
+    if (c<8){
+        b :=a
+        d:=2
+    }
 }

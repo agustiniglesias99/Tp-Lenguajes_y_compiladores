@@ -10,6 +10,7 @@ parser code {:
     private IntermediateCodeGenerator intermediateCode = IntermediateCodeGenerator.getInstance();
     private Stack<String> pilaInit = new Stack<>();
     private Stack<Integer> pilaWhile = new Stack<>();
+    private Stack<Integer> pilaCond = new Stack<>();
     private Stack<String> pilaExpresion = new Stack<>();
     private SymbolTableGenerator symbolTable = SymbolTableGenerator.getInstance();
     private String cmpAux = "";
@@ -116,24 +117,24 @@ asignacion ::= ID:id {: symbolTable.verifyType(id.toString()); :} ASIGNACION exp
 :};
 
 iteracion 	::= 	WHILE:_while PA condicion PC LLA programa LLC {:
-    // evaluar condicion de while y salto
-    Integer intInicio = intermediateCode.getNextIndex();
-    // Paso 3: El terceto siguiente es el salto condicional (BF o similar)
-    Integer tercetoSalto = intermediateCode.getIndex("Condind") + 1;
+    //intermediateCode.addTerceto("BI", intermediateCode.getIndexDraw("Condind"), "_");
+    intermediateCode.addTerceto("BI", "["+pilaCond.pop()+"]", "_");
 
-        // Paso 4: Acá ya se agregó el cuerpo del while como parte de 'programa'
+    Integer intFin = intermediateCode.getNextIndex();
 
-        // Paso 5: Agregar salto incondicional al inicio del while
-        intermediateCode.addTerceto("BI", intermediateCode.getIndexDraw("Condind"), "_");
+    intermediateCode.getTercetoByIdx(pilaWhile.pop()).modificarTerceto("["+intFin+"]");
 
-        // Paso 6: Completar salto falso al final del cuerpo
-        intermediateCode.getTercetoByIdx(pilaWhile.pop()).modificarTerceto(intermediateCode.getNextIndex());
     System.out.println("WHILE:_while PA condicion PC LLA programa LLC");
  :};
-ifHeader    ::= 	IF PA condicion PC {: System.out.println("IF PA condicion PC"); :};
+ifHeader    ::= 	IF PA condicion PC {:
+    System.out.println("IF PA condicion PC");
+ :};
 
 seleccion	::=		ifHeader LLA programa LLC {:
+    // apilo idTerceto cuando encuentro { y desapilo y modifico el terceto cuando encuentro una }
+            Integer intFin = intermediateCode.getNextIndex();
 
+            intermediateCode.getTercetoByIdx(pilaWhile.pop()).modificarTerceto("["+intFin+"]");
     System.out.println("ifHeader LLA programa LLC");
  :};
 seleccion	::= 	ifHeader LLA programa LLC ELSE LLA programa LLC {: System.out.println("ifHeader LLA programa LLC ELSE LLA programa LLC"); :};
@@ -141,10 +142,15 @@ seleccion	::= 	ifHeader LLA programa LLC ELSE LLA programa LLC {: System.out.pri
 condicion 	::= 	comparacion AND:op comparacion {:
     System.out.println("comparacion AND:op comparacion");
 :};
-condicion 	::= 	comparacion OR:op comparacion  {: System.out.println("comparacion OR:op comparacion"); :};
+condicion 	::= 	comparacion OR:op comparacion  {:
+    System.out.println("comparacion OR:op comparacion"); :};
 condicion	::= 	comparacion 				   {:
     Integer tercetoNum = intermediateCode.getIndex("Cmpind");
     intermediateCode.addIndex("Condind", tercetoNum);
+
+    pilaCond.push(intermediateCode.getIndex("Condind"));
+
+
     System.out.println("comparacion");
 :};
 
@@ -369,7 +375,7 @@ dec ::= listaId DP tipoDato:tp {:
 
 listaId ::= listaId COMA ID:id {:
     pilaInit.push(id.toString());
-    System.out.println("listaId => listaId COM ID");
+    System.out.println("listaId => listaId COMA ID");
 :};
 listaId ::= ID:id {:
     pilaInit.push(id.toString());
