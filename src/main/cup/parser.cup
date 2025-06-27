@@ -160,6 +160,7 @@ intermediateCode.getTercetoByIdx(saltoFalso).modificarTerceto("[" + idx2 + "]");
 System.out.println("valor de idx2" + idx2 );
     intermediateCode.addIndex("Condind", idx2);
     pilaCond.push(intermediateCode.getIndex("Condind"));
+
     System.out.println("comparacion AND:op comparacion");
 :};
 condicion 	::= 	comparacion OR:op comparacion  {:
