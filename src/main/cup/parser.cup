@@ -129,7 +129,6 @@ iteracion 	::= 	WHILE:_while {: banderaPila  = false; :} PA condicion PC LLA pro
     System.out.println("WHILE:_while PA condicion PC LLA programa LLC");
  :};
 ifHeader    ::= 	IF {: banderaPila  = true; :} PA condicion PC {:
-
     System.out.println("IF PA condicion PC");
  :};
 
@@ -140,22 +139,37 @@ seleccion	::=		ifHeader LLA programa LLC {:
             pilaCond.pop(); // para desapilar la cond que me quedo en la pila si es que tengo WHILE e IF anidados
     System.out.println("ifHeader LLA programa LLC");
  :};
+
 seleccion	::= 	ifHeader LLA programa  LLC ELSE LLA programa LLC {:
 
 System.out.println("ifHeader LLA programa LLC ELSE LLA programa LLC");
 :};
-
 condicion 	::= 	comparacion AND:op comparacion {:
+    Integer saltoFalso = 0;
+ if (banderaPila){
+   saltoFalso = pilaIf.pop(); // terceto de la 2° comparación
+   pilaIf.push(saltoFalso);
+ }
+ else {
+    saltoFalso = pilaWhile.pop(); // terceto  de la 2° comparación
+ }
+System.out.println("valor de saltoFalso" + saltoFalso );
+
+Integer idx2 = intermediateCode.getIndex("Cmpind"); // 2° comparación
+intermediateCode.getTercetoByIdx(saltoFalso).modificarTerceto("[" + idx2 + "]");
+System.out.println("valor de idx2" + idx2 );
+    intermediateCode.addIndex("Condind", idx2);
+    pilaCond.push(intermediateCode.getIndex("Condind"));
     System.out.println("comparacion AND:op comparacion");
 :};
 condicion 	::= 	comparacion OR:op comparacion  {:
     System.out.println("comparacion OR:op comparacion"); :};
+
 condicion	::= 	comparacion 				   {:
     Integer tercetoNum = intermediateCode.getIndex("Cmpind");
     intermediateCode.addIndex("Condind", tercetoNum);
 
     pilaCond.push(intermediateCode.getIndex("Condind"));
-
 
     System.out.println("comparacion");
 :};
@@ -166,7 +180,10 @@ condicion	::= 	NEGADO expresion 			   {: System.out.println("NEGADO expresion");
 comparacion ::= 	expresion {: pilaExpresion.push(intermediateCode.getIndexDraw("Eind")); :} comparador expresion  {:
     Integer intCmp = intermediateCode.addTerceto("cmp",pilaExpresion.pop(),intermediateCode.getIndexDraw("Eind"));
     intermediateCode.addIndex("Cmpind",intCmp);
+
     Integer intSalto = intermediateCode.addTerceto(cmpAux,"_","_");
+   System.out.println("valor de intCmp" + intCmp );
+    System.out.println("valor de intSalto" + intSalto );
     if (banderaPila){
     pilaIf.push(intSalto);
     }
