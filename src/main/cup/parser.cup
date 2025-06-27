@@ -10,6 +10,8 @@ parser code {:
     private IntermediateCodeGenerator intermediateCode = IntermediateCodeGenerator.getInstance();
     private Stack<String> pilaInit = new Stack<>();
     private Stack<Integer> pilaWhile = new Stack<>();
+    private Stack<Integer> pilaIf = new Stack<>();
+    private boolean banderaPila = false;
     private Stack<Integer> pilaCond = new Stack<>();
     private Stack<String> pilaExpresion = new Stack<>();
     private SymbolTableGenerator symbolTable = SymbolTableGenerator.getInstance();
@@ -116,7 +118,7 @@ asignacion ::= ID:id {: symbolTable.verifyType(id.toString()); :} ASIGNACION exp
     System.out.println("asignacion => id asignacion expresion;");
 :};
 
-iteracion 	::= 	WHILE:_while PA condicion PC LLA programa LLC {:
+iteracion 	::= 	WHILE:_while {: banderaPila  = false; :} PA condicion PC LLA programa LLC {:
     //intermediateCode.addTerceto("BI", intermediateCode.getIndexDraw("Condind"), "_");
     intermediateCode.addTerceto("BI", "["+pilaCond.pop()+"]", "_");
 
@@ -126,18 +128,22 @@ iteracion 	::= 	WHILE:_while PA condicion PC LLA programa LLC {:
 
     System.out.println("WHILE:_while PA condicion PC LLA programa LLC");
  :};
-ifHeader    ::= 	IF PA condicion PC {:
+ifHeader    ::= 	IF {: banderaPila  = true; :} PA condicion PC {:
+
     System.out.println("IF PA condicion PC");
  :};
 
 seleccion	::=		ifHeader LLA programa LLC {:
     // apilo idTerceto cuando encuentro { y desapilo y modifico el terceto cuando encuentro una }
             Integer intFin = intermediateCode.getNextIndex();
-
-            intermediateCode.getTercetoByIdx(pilaWhile.pop()).modificarTerceto("["+intFin+"]");
+            intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+intFin+"]");
+            pilaCond.pop(); // para desapilar la cond que me quedo en la pila si es que tengo WHILE e IF anidados
     System.out.println("ifHeader LLA programa LLC");
  :};
-seleccion	::= 	ifHeader LLA programa LLC ELSE LLA programa LLC {: System.out.println("ifHeader LLA programa LLC ELSE LLA programa LLC"); :};
+seleccion	::= 	ifHeader LLA programa  LLC ELSE LLA programa LLC {:
+
+System.out.println("ifHeader LLA programa LLC ELSE LLA programa LLC");
+:};
 
 condicion 	::= 	comparacion AND:op comparacion {:
     System.out.println("comparacion AND:op comparacion");
@@ -161,7 +167,12 @@ comparacion ::= 	expresion {: pilaExpresion.push(intermediateCode.getIndexDraw("
     Integer intCmp = intermediateCode.addTerceto("cmp",pilaExpresion.pop(),intermediateCode.getIndexDraw("Eind"));
     intermediateCode.addIndex("Cmpind",intCmp);
     Integer intSalto = intermediateCode.addTerceto(cmpAux,"_","_");
+    if (banderaPila){
+    pilaIf.push(intSalto);
+    }
+    else {
     pilaWhile.push(intSalto);
+    }
     System.out.println("expresion comparador expresion");
 :};
 comparador  ::= 	IGUAL_IGUAL:comp 				{:
