@@ -126,9 +126,11 @@ public class AsmCodeGenerator implements FileGenerator {
                 }else{
                     //Si es un salto al pasado, CREO QUE ES SOLO EN EL WHILE tengo que ir a la etiqueta que se creo ahi
                     etiqueta = etiquetasIf.get(tercetoIndex);
+                    etiquetasIf.remove(tercetoIndex);
                 }
 
                 asm += "JMP " + etiqueta + "\n";
+
             }else if(primer.equalsIgnoreCase("mod")){
                 if(! (segundo.startsWith("[") && segundo.endsWith("]")) ){
                     asm += "FLD " + segundo + "\n";
