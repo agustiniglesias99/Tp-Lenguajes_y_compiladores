@@ -11,15 +11,18 @@ parser code {:
     private Stack<String> pilaInit = new Stack<>();
     private Stack<Integer> pilaWhile = new Stack<>();
     private Stack<Integer> pilaIf = new Stack<>();
-    private Stack<Integer> pilaContador = new Stack<>();
+    private Stack<Integer> pilaElse = new Stack<>();
+    //private Stack<Integer> pilaContador = new Stack<>();
     private boolean banderaPila = false;
-    private Stack<Integer> banderaCondicion = new Stack<>();
+    private Stack<String> banderaCondicion = new Stack<>();
     private Stack<Integer> pilaCond = new Stack<>();
     private Stack<String> pilaExpresion = new Stack<>();
     private SymbolTableGenerator symbolTable = SymbolTableGenerator.getInstance();
     private String cmpAux = "";
+    private String cmpAuxNeg = "";
     private String tipoDatoAux = "";
     private String variableNegCalc = "";
+    private boolean orInit = false;
 :};
 
 // Terminals
@@ -139,22 +142,59 @@ seleccion	::=		ifHeader LLA programa LLC {:
             Integer intFin = intermediateCode.getNextIndex();
             //intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+intFin+"]");
             System.out.println("TERCETO FINAL SALTO: -- " + intFin);
-            if(banderaCondicion.pop() != 2){
-                for(Integer cont=pilaContador.pop();cont>0;cont--){
+            String auxCondicion = banderaCondicion.pop();
+            System.out.println(auxCondicion);
+            if(auxCondicion.equals("AND")){
+                //for(Integer cont=pilaContador.pop();cont>0;cont--){
                     intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+intFin+"]");
-                }
+                    intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+intFin+"]");
+                //}
             }
-            else{
-                pilaContador.pop();
+            else if(auxCondicion.equals("OR")){
+                //pilaContador.pop();
                 Integer segSalto = pilaIf.pop();
                 intermediateCode.getTercetoByIdx(segSalto).modificarTerceto("["+intFin+"]");
                 intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+(segSalto-1)+"]");
+            }
+            else if(auxCondicion.equals("simple")){
+                //pilaContador.pop();
+                intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+intFin+"]");
+                //intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+(segSalto-1)+"]");
             }
             pilaCond.pop(); // para desapilar la cond que me quedo en la pila si es que tengo WHILE e IF anidados
     System.out.println("ifHeader LLA programa LLC");
  :};
 
-seleccion	::= 	ifHeader LLA programa  LLC ELSE LLA programa LLC {:
+seleccion	::= 	ifHeader LLA programa  LLC {:
+                Integer intFin = intermediateCode.addTerceto("BI","_","_");
+                pilaElse.push(intFin);
+                intFin++;
+                //intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+intFin+"]");
+                System.out.println("TERCETO FINAL SALTO: -- " + intFin);
+                String auxCondicion = banderaCondicion.pop();
+                System.out.println(auxCondicion);
+                if(auxCondicion.equals("AND")){
+                    //for(Integer cont=pilaContador.pop();cont>0;cont--){
+                        intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+intFin+"]");
+                        intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+intFin+"]");
+                    //}
+                }
+                else if(auxCondicion.equals("OR")){
+                    //pilaContador.pop();
+                    Integer segSalto = pilaIf.pop();
+                    intermediateCode.getTercetoByIdx(segSalto).modificarTerceto("["+intFin+"]");
+                    intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+(segSalto-1)+"]");
+                }
+                else if(auxCondicion.equals("simple")){
+                    //pilaContador.pop();
+                    intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+intFin+"]");
+                    //intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+(segSalto-1)+"]");
+                }
+                pilaCond.pop();
+ :}
+ ELSE LLA programa LLC {:
+    Integer intFin = intermediateCode.getNextIndex();
+     intermediateCode.getTercetoByIdx(pilaElse.pop()).modificarTerceto("["+intFin+"]");
 
 System.out.println("ifHeader LLA programa LLC ELSE LLA programa LLC");
 :};
@@ -178,8 +218,8 @@ condicion 	::= 	comparacion AND:op comparacion {:
     Integer tercetoNum = intermediateCode.getIndex("Cmpind");
     intermediateCode.addIndex("Condind", tercetoNum);
 
-    pilaContador.push(2);
-    banderaCondicion.push(1);
+    //pilaContador.push(1);
+    banderaCondicion.push("AND");
 
     pilaCond.push(intermediateCode.getIndex("Condind"));
 
@@ -188,23 +228,25 @@ condicion 	::= 	comparacion AND:op comparacion {:
     System.out.println("comparacion AND:op comparacion");
 :};
 
-condicion 	::= 	comparacion OR:op comparacion  {:
-
+//condicion 	::=  {: orInit=true; :}	comparacion OR:op {: orInit=false; :} comparacion  {:
+condicion 	::= comparacion OR:op comparacion  {:
     Integer tercetoNum = intermediateCode.getIndex("Cmpind");
         intermediateCode.addIndex("Condind", tercetoNum);
 
-        pilaContador.push(2);
-        banderaCondicion.push(2);
+        //pilaContador.push(true);
+        banderaCondicion.push("OR");
 
         pilaCond.push(intermediateCode.getIndex("Condind"));
-    System.out.println("comparacion OR:op comparacion"); :};
+        orInit = false;
+    System.out.println("comparacion OR:op comparacion");
+:};
 
 condicion	::= 	comparacion 				   {:
     Integer tercetoNum = intermediateCode.getIndex("Cmpind");
     intermediateCode.addIndex("Condind", tercetoNum);
 
-    pilaContador.push(1);
-    banderaCondicion.push(0);
+    //pilaContador.push(false);
+    banderaCondicion.push("simple");
 
     pilaCond.push(intermediateCode.getIndex("Condind"));
 
@@ -217,37 +259,47 @@ condicion	::= 	NEGADO expresion 			   {: System.out.println("NEGADO expresion");
 comparacion ::= 	expresion {: pilaExpresion.push(intermediateCode.getIndexDraw("Eind")); :} comparador expresion  {:
     Integer intCmp = intermediateCode.addTerceto("cmp",pilaExpresion.pop(),intermediateCode.getIndexDraw("Eind"));
     intermediateCode.addIndex("Cmpind",intCmp);
-
-    Integer intSalto = intermediateCode.addTerceto(cmpAux,"_","_");
-   System.out.println("valor de intCmp" + intCmp );
-    System.out.println("valor de intSalto" + intSalto );
-    if (banderaPila){
-    pilaIf.push(intSalto);
+    Integer intSalto;
+    if(orInit){
+      intSalto = intermediateCode.addTerceto(cmpAuxNeg,"_","_");
     }
     else {
-    pilaWhile.push(intSalto);
+      intSalto = intermediateCode.addTerceto(cmpAux,"_","_");
+    }
+    if (banderaPila){
+        pilaIf.push(intSalto);
+    }
+    else {
+        pilaWhile.push(intSalto);
     }
     System.out.println("expresion comparador expresion");
 :};
+
 comparador  ::= 	IGUAL_IGUAL:comp 				{:
     cmpAux = "BNE";
+    cmpAuxNeg = "BEQ";
     System.out.println("IGUAL_IGUAL:comp");
 :};
 comparador  ::= 	DISTINTO:comp 					{:
     cmpAux = "BEQ";
+    cmpAuxNeg = "BNE";
     System.out.println("DISTINTO:comp");
  :};
 comparador  ::= 	MAYOR_IGUAL:comp 				{:
     cmpAux = "BLT";
+    cmpAuxNeg = "BGE";
     System.out.println("MAYOR_IGUAL:comp"); :};
 comparador  ::= 	MENOR_IGUAL:comp				{:
     cmpAux = "BGT";
+    cmpAuxNeg = "BLE";
     System.out.println("MENOR_IGUAL:comp"); :};
 comparador  ::= 	MAYOR:comp						{:
     cmpAux = "BLE";
+    cmpAuxNeg = "BGT";
     System.out.println("MAYOR:comp"); :};
 comparador  ::= 	MENOR:comp						{:
     cmpAux = "BGE";
+    cmpAuxNeg = "BLT";
     System.out.println("MENOR:comp"); :};
 
 expresion ::= expresion OP_SUM factor {:
