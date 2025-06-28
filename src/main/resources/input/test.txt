@@ -1,5 +1,5 @@
 init {
-    a,b,c,d,e : int
+    a,b,c,d : string
 }
 a := 4
 b := 3
