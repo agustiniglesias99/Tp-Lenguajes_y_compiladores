@@ -26,6 +26,9 @@ parser code {:
     private String tipoDatoAux = "";
     private String variableNegCalc = "";
     private boolean orInit = false;
+
+
+    private Stack<Integer> labelWh = new Stack<>();
 :};
 
 // Terminals
@@ -126,9 +129,14 @@ asignacion ::= ID:id {: symbolTable.verifyType(id.toString()); :} ASIGNACION exp
     System.out.println("asignacion => id asignacion expresion;");
 :};
 
-iteracion 	::= 	 WHILE:_while {: banderaPila  = false; intermediateCode.addTerceto("ADDLABEL", "_", "_"); :} PA condicion PC LLA programa LLC {:
+iteracion 	::= 	 WHILE:_while {:
+        banderaPila  = false;
+        Integer indexLabelWh = intermediateCode.addTerceto("ADDLABEL", "_", "_");
+        labelWh.push(indexLabelWh);
+    :} PA condicion PC LLA programa LLC {:
     //intermediateCode.addTerceto("BI", intermediateCode.getIndexDraw("Condind"), "_");
-    intermediateCode.addTerceto("BI", "["+pilaCond.pop()+"]", "_");
+    Integer et_wh = labelWh.pop();
+    intermediateCode.addTerceto("BI", "["+et_wh+"]", "_");
 
     Integer intFin = intermediateCode.getNextIndex();
 
@@ -288,6 +296,7 @@ comparacion ::= 	expresion {: pilaExpresion.push(intermediateCode.getIndexDraw("
         pilaIf.push(intSalto);
     }
     else {
+        //ACA
         pilaWhile.push(intSalto);
     }
     System.out.println("expresion comparador expresion");
