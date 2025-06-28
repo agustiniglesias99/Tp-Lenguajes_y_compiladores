@@ -17,6 +17,9 @@ parser code {:
     private Stack<String> banderaCondicion = new Stack<>();
     private Stack<Integer> pilaCond = new Stack<>();
     private Stack<String> pilaExpresion = new Stack<>();
+    private Stack<String> pilaCmp = new Stack<>();
+    private Stack<String> pilaCmpNeg = new Stack<>();
+    private Stack<Integer> pilaSaltos = new Stack<>();
     private SymbolTableGenerator symbolTable = SymbolTableGenerator.getInstance();
     private String cmpAux = "";
     private String cmpAuxNeg = "";
@@ -155,7 +158,8 @@ seleccion	::=		ifHeader LLA programa LLC {:
                 //pilaContador.pop();
                 Integer segSalto = pilaIf.pop();
                 intermediateCode.getTercetoByIdx(segSalto).modificarTerceto("["+intFin+"]");
-                intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+(segSalto-1)+"]");
+                intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+(segSalto+1)+"]");
+                System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAA  ---------------"+segSalto);
             }
             else if(auxCondicion.equals("simple")){
                 //pilaContador.pop();
@@ -184,7 +188,8 @@ seleccion	::= 	ifHeader LLA programa  LLC {:
                     //pilaContador.pop();
                     Integer segSalto = pilaIf.pop();
                     intermediateCode.getTercetoByIdx(segSalto).modificarTerceto("["+intFin+"]");
-                    intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+(segSalto-1)+"]");
+                    intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+(segSalto+1)+"]");
+                    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAA  ---------------"+segSalto);
                 }
                 else if(auxCondicion.equals("simple")){
                     //pilaContador.pop();
@@ -201,20 +206,13 @@ System.out.println("ifHeader LLA programa LLC ELSE LLA programa LLC");
 :};
 
 condicion 	::= 	comparacion AND:op comparacion {:
-    /*Integer saltoFalso1=0;
-    Integer saltoFalso2=0;
- if (banderaPila){
-   saltoFalso1 = pilaIf.pop(); // terceto de la 2° comparación
-   saltoFalso2 = pilaIf.pop();
- }
- else {
-    saltoFalso1 = pilaWhile.pop(); // terceto  de la 2° comparación
- }
 
-    Integer idFinal = intermediateCode.getNextIndex(); // 2° comparación
-    intermediateCode.getTercetoByIdx(saltoFalso1).modificarTerceto("[" + idFinal + "]");
-    intermediateCode.getTercetoByIdx(saltoFalso2).modificarTerceto("[" + idFinal + "]");
-    intermediateCode.addIndex("Condind", idFinal);*/
+    //modifco segundo salto
+    intermediateCode.getTercetoByIdx(pilaSaltos.pop()).modificarSaltoTerceto(pilaCmp.pop());
+    pilaCmpNeg.pop();
+    //modifico primer salto
+    intermediateCode.getTercetoByIdx(pilaSaltos.pop()).modificarSaltoTerceto(pilaCmp.pop());
+    pilaCmpNeg.pop();
 
     Integer tercetoNum = intermediateCode.getIndex("Cmpind");
     intermediateCode.addIndex("Condind", tercetoNum);
@@ -229,16 +227,22 @@ condicion 	::= 	comparacion AND:op comparacion {:
     System.out.println("comparacion AND:op comparacion");
 :};
 
-condicion 	::= comparacion OR:op {:
-    orInit = true;
-    banderaCondicion.push("OR");
-    :} comparacion  {:
-//condicion 	::= comparacion OR:op comparacion  {:
+condicion 	::= comparacion OR:op comparacion  {:
+
+        //desapilo pilaSaltos
+        //modificoSaltoTerceto(pilaSaltos,pilaAux.pop)
+           intermediateCode.getTercetoByIdx(pilaSaltos.pop()).modificarSaltoTerceto(pilaCmp.pop());
+           pilaCmpNeg.pop();
+        //desapilo pilaSaltos
+        // modificoSaltoTerceto(pilaSaltos,pilaAuxNeg.pop)
+        intermediateCode.getTercetoByIdx(pilaSaltos.pop()).modificarSaltoTerceto(pilaCmpNeg.pop());
+        pilaCmp.pop();
+
     Integer tercetoNum = intermediateCode.getIndex("Cmpind");
         intermediateCode.addIndex("Condind", tercetoNum);
 
         //pilaContador.push(true);
-        //banderaCondicion.push("OR");
+        banderaCondicion.push("OR");
 
         pilaCond.push(intermediateCode.getIndex("Condind"));
     System.out.println("comparacion OR:op comparacion");
@@ -248,6 +252,8 @@ condicion	::= 	comparacion 				   {:
     Integer tercetoNum = intermediateCode.getIndex("Cmpind");
     intermediateCode.addIndex("Condind", tercetoNum);
 
+    intermediateCode.getTercetoByIdx(pilaSaltos.pop()).modificarSaltoTerceto(pilaCmp.pop());
+    pilaCmpNeg.pop();
     //pilaContador.push(false);
     banderaCondicion.push("simple");
 
@@ -262,16 +268,22 @@ condicion	::= 	NEGADO expresion 			   {: System.out.println("NEGADO expresion");
 comparacion ::= 	expresion {: pilaExpresion.push(intermediateCode.getIndexDraw("Eind")); :} comparador expresion  {:
     Integer intCmp = intermediateCode.addTerceto("cmp",pilaExpresion.pop(),intermediateCode.getIndexDraw("Eind"));
     intermediateCode.addIndex("Cmpind",intCmp);
-    Integer intSalto;
-    if(orInit){
-      intSalto = intermediateCode.addTerceto(cmpAux,"_","_");
+
+    //creo terceto salto     id=intermediateCode.addTerceto("_","_","_");
+    Integer intSalto = intermediateCode.addTerceto("_","_","_");
+    // apilo tercetoCreado   (pilaSaltos.push(id))
+    pilaSaltos.push(intSalto);
+    // pregunto si es if o while, si if pilaIf.push(id) ----- si while pilaWhile.push(id)
+
+
+    /*if(orInit){
+      intSalto = intermediateCode.addTerceto(cmpAuxNeg,"_","_");
       orInit = false;
-    }else if (banderaCondicion.size() > 0 && banderaCondicion.peek().equals("OR")) {
-        intSalto = intermediateCode.addTerceto(cmpAuxNeg, "_", "_"); // ← Primera condición del OR usa cmpAuxNeg
     }
     else {
       intSalto = intermediateCode.addTerceto(cmpAux,"_","_");
-    }
+    }*/
+
     if (banderaPila){
         pilaIf.push(intSalto);
     }
@@ -282,8 +294,10 @@ comparacion ::= 	expresion {: pilaExpresion.push(intermediateCode.getIndexDraw("
 :};
 
 comparador  ::= 	IGUAL_IGUAL:comp 				{:
-    cmpAux = "BNE";
-    cmpAuxNeg = "BEQ";
+    //cmpAux = "BNE";
+    //cmpAuxNeg = "BEQ";
+    pilaCmp.push("BNE");
+    pilaCmpNeg.push("BEQ");
     System.out.println("IGUAL_IGUAL:comp");
 :};
 comparador  ::= 	DISTINTO:comp 					{:
@@ -296,16 +310,16 @@ comparador  ::= 	MAYOR_IGUAL:comp 				{:
     cmpAuxNeg = "BGE";
     System.out.println("MAYOR_IGUAL:comp"); :};
 comparador  ::= 	MENOR_IGUAL:comp				{:
-    cmpAux = "BGT";
-    cmpAuxNeg = "BLE";
+    pilaCmp.push("BGT");
+    pilaCmpNeg.push("BLE");
     System.out.println("MENOR_IGUAL:comp"); :};
 comparador  ::= 	MAYOR:comp						{:
     cmpAux = "BLE";
     cmpAuxNeg = "BGT";
     System.out.println("MAYOR:comp"); :};
 comparador  ::= 	MENOR:comp						{:
-    cmpAux = "BGE";
-    cmpAuxNeg = "BLT";
+    pilaCmp.push("BGE");
+    pilaCmpNeg.push("BLT");
     System.out.println("MENOR:comp"); :};
 
 expresion ::= expresion OP_SUM factor {:

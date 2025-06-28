@@ -1,10 +1,14 @@
 init {
-    a,b,c,d : string
+    a,b,c,d,e : string
 }
 a := 4
 b := 3
-if (a<8 OR c==4){
+if (a<8 AND c==4){
     d := 3
-}else{
+    if (d<8 OR e==4){
+        d := 3
+    }
+}
+else{
  c:=9
 }

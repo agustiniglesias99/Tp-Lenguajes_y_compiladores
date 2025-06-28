@@ -19,6 +19,10 @@ public class Terceto {
         this.operando1 = operando1;
     }
 
+    public void modificarSaltoTerceto(String operador){
+        this.operador = operador;
+    }
+
     public String getOperando() {
         return operador;
     }
