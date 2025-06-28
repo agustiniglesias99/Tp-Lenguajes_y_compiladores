@@ -244,3 +244,64 @@ LOCAL @@CICLO, @@NOTEQUAL, @@BYE
 	NOP
 ENDM 
   
+; Macro para SUBSTRING
+SUBSTRING MACRO destino, origen, inicio, fin
+    LOCAL loop_copy, end_copy
+    PUSH SI
+    PUSH DI
+    PUSH CX
+    
+    ; Cargar dirección origen en SI
+    LEA SI, origen
+    ; Cargar dirección destino en DI
+    LEA DI, destino
+    ; Cargar posición inicial en BX
+    MOV BX, inicio
+    ; Avanzar SI hasta la posición inicial
+    ADD SI, BX
+    ; Calcular longitud a copiar
+    MOV CX, fin
+    SUB CX, inicio
+    
+    ; Copiar caracteres
+    loop_copy:
+        MOV AL, [SI]
+        MOV [DI], AL
+        INC SI
+        INC DI
+        LOOP loop_copy
+    
+    ; Terminar con '$'
+    MOV BYTE PTR [DI], '$'
+    
+    POP CX
+    POP DI
+    POP SI
+ENDM
+
+; Macro para CONCAT
+CONCAT MACRO destino, origen1, origen2
+    LOCAL find_end, copy_loop, end_copy
+    PUSH SI
+    PUSH DI
+    PUSH CX
+    
+    ; Copiar primera cadena a destino
+    LEA SI, origen1
+    LEA DI, destino
+    ; Copiar origen1 a destino
+    REP MOVSB
+    
+    ; Buscar final de destino (donde está el '$')
+    DEC DI  ; Retroceder una posición
+    ; Ahora copiar origen2 al final
+    LEA SI, origen2
+    REP MOVSB
+    
+    ; Asegurar que termine con '$'
+    MOV BYTE PTR [DI], '$'
+    
+    POP CX
+    POP DI
+    POP SI
+ENDM

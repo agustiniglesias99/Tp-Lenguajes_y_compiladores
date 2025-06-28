@@ -68,7 +68,7 @@ public class AsmCodeGenerator implements FileGenerator {
             }
 
             if(primer.equalsIgnoreCase("cmp")){
-                asm += generarCodigoIf();
+                asm += generarCodigoIf(tc);
             } else if(comparadores.get(primer) != null) {
                 // Manejar saltos - verificar que el destino existe
                 if (segundo.startsWith("[") && segundo.endsWith("]")) {
@@ -91,12 +91,59 @@ public class AsmCodeGenerator implements FileGenerator {
             } else if(primer.equals("=")) {
                 asm += generarAsignacion(tc);
             }else if(operadores.get(primer) != null) {
+                if(!(segundo.startsWith("[") && segundo.endsWith("]"))){
+                    asm += "FLD " + segundo + "\n";
+                }
+
+                if(!(tercero.startsWith("[") && tercero.endsWith("]"))){
+                    asm += "FLD " + tercero + "\n";
+                }
+
                 asm += operadores.get(primer) + "\n";
             }else if(primer.equals("read")){
                 asm += generarScanf(tc);
             }else if(primer.equals("write")){
                 asm += generarPrintf(tc);
-            }else {
+            }else if(primer.equals("ADDLABEL")){
+                String etiqueta = generarEtiqueta();
+                etiquetasIf.put(i, etiqueta);
+                asm += etiqueta + "\n";
+            }else if(primer.equalsIgnoreCase("bi")){
+                String tercetoRef = segundo.substring(1, segundo.length() - 1);
+                int tercetoIndex = Integer.parseInt(tercetoRef);
+
+                String etiqueta = "";
+                //Si es mayor, no pasa nada creo etiqueta para el futuro
+                if(tercetoIndex > i){
+
+                    //Genero la etiqueta SI NO EXISTE YA UNA A ESE NRO DE TERCETO
+                    if(etiquetasIf.get(tercetoIndex) != null){
+                        etiqueta = etiquetasIf.get(tercetoIndex);
+                    }else{
+                        etiqueta = generarEtiqueta();
+                        etiquetasIf.put(tercetoIndex, etiqueta);
+                    }
+                }else{
+                    //Si es un salto al pasado, CREO QUE ES SOLO EN EL WHILE tengo que ir a la etiqueta que se creo ahi
+                    etiqueta = etiquetasIf.get(tercetoIndex);
+                }
+
+                asm += "JMP " + etiqueta + "\n";
+            }else if(primer.equalsIgnoreCase("mod")){
+                if(! (segundo.startsWith("[") && segundo.endsWith("]")) ){
+                    asm += "FLD " + segundo + "\n";
+                }
+                if(! (tercero.startsWith("[") && tercero.endsWith("]")) ){
+                    asm += "FLD " + tercero + "\n";
+                }
+
+                asm += "FPREM \n";
+                asm += "FSTP ST(1) \n";
+            }else if(primer.equalsIgnoreCase("SUBSTRING")){
+                asm += generarSubstring(tc);
+            }else if(primer.equalsIgnoreCase("CONCAT")){
+                asm += generarConcat(tc);
+            }else{
                 if (!primer.equals("_")) {
                     asm += resolverExpresion(primer);
                 }
@@ -117,8 +164,19 @@ public class AsmCodeGenerator implements FileGenerator {
         return asm;
     }
 
-    private String generarCodigoIf() {
+    private String generarCodigoIf(Terceto tc) {
         String asm_if = "";
+
+        String segundo = tc.getOperando1();
+        String tercero = tc.getOperando2();
+
+        if( !(segundo.startsWith("[") && segundo.endsWith("]")) ){
+            asm_if += "FLD " + segundo + "\n";
+        }
+
+        if( !(tercero.startsWith("[") && tercero.endsWith("]")) ){
+            asm_if += "FLD " + tercero + "\n";
+        }
 
         asm_if += "FXCH\n";
         asm_if += "FCOM\n";
@@ -169,7 +227,36 @@ public class AsmCodeGenerator implements FileGenerator {
     private String generarAsignacion(Terceto tc) {
         String asm = "";
         String segundo = tc.getOperando1();
-        asm += "FSTP " + segundo + "\n";
+
+        String tercero = tc.getOperando2();
+        boolean is_string = false;
+
+        if( !(tercero.startsWith("[") && tercero.endsWith("]")) ) {
+            Map<String, SymbolTableData> symbols = SymbolTableGenerator.getInstance().getSymbols();
+            for (Map.Entry<String, SymbolTableData> entry : symbols.entrySet()) {
+                if(entry.getKey().equals(segundo) || entry.getKey().equals("_"+segundo)){
+                    if(entry.getValue().getType().equals("string")){
+                        is_string = true;
+                        break;
+                    }
+                }
+            }
+            if(is_string){
+                asm += "STRCPY " + segundo + " " + tercero + "\n";
+            }else{
+                asm += "FLD " + tercero + "\n";
+            }
+        }
+
+        if(!is_string){
+            asm += "FSTP " + segundo + "\n";
+
+            if(segundo.startsWith("@res")){
+                asm += "FLD " + segundo + "\n";
+            }
+        }
+
+
         return asm;
     }
 
@@ -187,6 +274,7 @@ public class AsmCodeGenerator implements FileGenerator {
                 }else{
                     asm_scanf += "DisplayFloat ";
                 }
+                finded = true;
             }
         }
         if(!finded){
@@ -213,6 +301,21 @@ public class AsmCodeGenerator implements FileGenerator {
         }
 
         return asm_scanf + segundo + "\n";
+    }
+
+    private String generarSubstring(Terceto tc) {
+        String destino = "@subcadena";
+        String origen = tc.getOperando1();
+
+        return "SUBSTRING " + destino + ", " + origen + ", [ST1], [ST0]\n";
+    }
+
+    private String generarConcat(Terceto tc) {
+        String cadena1 = tc.getOperando1();
+        String cadena2 = tc.getOperando2();
+        String destino = "@resParcial";
+
+        return "CONCAT " + destino + ", " + cadena1 + ", " + cadena2 + "\n";
     }
 
     private String generarDATA(){

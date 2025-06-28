@@ -120,7 +120,7 @@ asignacion ::= ID:id {: symbolTable.verifyType(id.toString()); :} ASIGNACION exp
     System.out.println("asignacion => id asignacion expresion;");
 :};
 
-iteracion 	::= 	{: intermediateCode.addTerceto("ADDLABEL", "_", "_"); :} WHILE:_while {: banderaPila  = false; :} PA condicion PC LLA programa LLC {:
+iteracion 	::= 	 WHILE:_while {: banderaPila  = false; intermediateCode.addTerceto("ADDLABEL", "_", "_"); :} PA condicion PC LLA programa LLC {:
     //intermediateCode.addTerceto("BI", intermediateCode.getIndexDraw("Condind"), "_");
     intermediateCode.addTerceto("BI", "["+pilaCond.pop()+"]", "_");
 
@@ -359,7 +359,7 @@ termino ::= SLICEANDCONCAT PA CTE:inicio COMA CTE:fin COMA CADENA:palabra1 COMA 
     symbolTable.addToken("@auxPal2", "string");
     intermediateCode.addTerceto("=", "@auxPal2", palabra2.toString());
 
-    symbolTable.addToken("@auxConcat", "string");
+    symbolTable.addToken("@auxConcat", "int");
     intermediateCode.addTerceto("=", "@auxConcat", concatenar.toString());
 
     int cmp = intermediateCode.addTerceto("CMP", "@auxConcat", "1");
