@@ -11,7 +11,9 @@ parser code {:
     private Stack<String> pilaInit = new Stack<>();
     private Stack<Integer> pilaWhile = new Stack<>();
     private Stack<Integer> pilaIf = new Stack<>();
+    private Stack<Integer> pilaContador = new Stack<>();
     private boolean banderaPila = false;
+    private Stack<Integer> banderaCondicion = new Stack<>();
     private Stack<Integer> pilaCond = new Stack<>();
     private Stack<String> pilaExpresion = new Stack<>();
     private SymbolTableGenerator symbolTable = SymbolTableGenerator.getInstance();
@@ -135,7 +137,19 @@ ifHeader    ::= 	IF {: banderaPila  = true; :} PA condicion PC {:
 seleccion	::=		ifHeader LLA programa LLC {:
     // apilo idTerceto cuando encuentro { y desapilo y modifico el terceto cuando encuentro una }
             Integer intFin = intermediateCode.getNextIndex();
-            intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+intFin+"]");
+            //intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+intFin+"]");
+            System.out.println("TERCETO FINAL SALTO: -- " + intFin);
+            if(banderaCondicion.pop() != 2){
+                for(Integer cont=pilaContador.pop();cont>0;cont--){
+                    intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+intFin+"]");
+                }
+            }
+            else{
+                pilaContador.pop();
+                Integer segSalto = pilaIf.pop();
+                intermediateCode.getTercetoByIdx(segSalto).modificarTerceto("["+intFin+"]");
+                intermediateCode.getTercetoByIdx(pilaIf.pop()).modificarTerceto("["+(segSalto-1)+"]");
+            }
             pilaCond.pop(); // para desapilar la cond que me quedo en la pila si es que tengo WHILE e IF anidados
     System.out.println("ifHeader LLA programa LLC");
  :};
@@ -144,31 +158,53 @@ seleccion	::= 	ifHeader LLA programa  LLC ELSE LLA programa LLC {:
 
 System.out.println("ifHeader LLA programa LLC ELSE LLA programa LLC");
 :};
+
 condicion 	::= 	comparacion AND:op comparacion {:
-    Integer saltoFalso = 0;
+    /*Integer saltoFalso1=0;
+    Integer saltoFalso2=0;
  if (banderaPila){
-   saltoFalso = pilaIf.pop(); // terceto de la 2° comparación
-   pilaIf.push(saltoFalso);
+   saltoFalso1 = pilaIf.pop(); // terceto de la 2° comparación
+   saltoFalso2 = pilaIf.pop();
  }
  else {
-    saltoFalso = pilaWhile.pop(); // terceto  de la 2° comparación
+    saltoFalso1 = pilaWhile.pop(); // terceto  de la 2° comparación
  }
-System.out.println("valor de saltoFalso" + saltoFalso );
 
-Integer idx2 = intermediateCode.getIndex("Cmpind"); // 2° comparación
-intermediateCode.getTercetoByIdx(saltoFalso).modificarTerceto("[" + idx2 + "]");
-System.out.println("valor de idx2" + idx2 );
-    intermediateCode.addIndex("Condind", idx2);
+    Integer idFinal = intermediateCode.getNextIndex(); // 2° comparación
+    intermediateCode.getTercetoByIdx(saltoFalso1).modificarTerceto("[" + idFinal + "]");
+    intermediateCode.getTercetoByIdx(saltoFalso2).modificarTerceto("[" + idFinal + "]");
+    intermediateCode.addIndex("Condind", idFinal);*/
+
+    Integer tercetoNum = intermediateCode.getIndex("Cmpind");
+    intermediateCode.addIndex("Condind", tercetoNum);
+
+    pilaContador.push(2);
+    banderaCondicion.push(1);
+
     pilaCond.push(intermediateCode.getIndex("Condind"));
 
+
+    //System.out.println("SF1: ----> "+ saltoFalso1 + "-----------SF2: ----> " + saltoFalso2 + "-----------idFinal: ----> " + idFinal );
     System.out.println("comparacion AND:op comparacion");
 :};
+
 condicion 	::= 	comparacion OR:op comparacion  {:
+
+    Integer tercetoNum = intermediateCode.getIndex("Cmpind");
+        intermediateCode.addIndex("Condind", tercetoNum);
+
+        pilaContador.push(2);
+        banderaCondicion.push(2);
+
+        pilaCond.push(intermediateCode.getIndex("Condind"));
     System.out.println("comparacion OR:op comparacion"); :};
 
 condicion	::= 	comparacion 				   {:
     Integer tercetoNum = intermediateCode.getIndex("Cmpind");
     intermediateCode.addIndex("Condind", tercetoNum);
+
+    pilaContador.push(1);
+    banderaCondicion.push(0);
 
     pilaCond.push(intermediateCode.getIndex("Condind"));
 

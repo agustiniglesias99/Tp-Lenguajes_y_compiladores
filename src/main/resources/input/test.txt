@@ -1,9 +1,21 @@
 init {
-    a,b,c,d : int
+    a,b,c,d,e : int
 }
 a := 4
 b := 3
 if (a<8 AND b==1 ){
-b := 2
-d := 3
+    if(c<3){
+        write("1er IF")
+    }
+    d := 3
+    if(d<3 OR e!=4){
+        while(a<1){
+            write("WHILE")
+        }
+            write("2do IF")
+    }
+    b:=2
+}
+if(d<3 OR e!=4){
+       write("3er IF")
 }
