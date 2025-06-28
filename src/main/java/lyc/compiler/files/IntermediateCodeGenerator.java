@@ -55,4 +55,8 @@ public class IntermediateCodeGenerator implements FileGenerator {
             fileWriter.write("[" + i + "] " + t.toString() + "\n");
         }
     }
+
+    public ArrayList<Terceto> getIntermediateCode(){
+        return this.tercetos;
+    }
 }

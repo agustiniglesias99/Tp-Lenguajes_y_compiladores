@@ -27,7 +27,7 @@ public final class Compiler {
             parser.parse();
             FileOutputWriter.writeOutput("symbol-table.txt", lyc.compiler.symbolTable.SymbolTableGenerator.getInstance());
             FileOutputWriter.writeOutput("intermediate-code.txt", IntermediateCodeGenerator.getInstance());
-            FileOutputWriter.writeOutput("final.asm", new AsmCodeGenerator());
+            FileOutputWriter.writeOutput("final.asm", new AsmCodeGenerator(IntermediateCodeGenerator.getInstance().getIntermediateCode()));
         } catch (IOException e) {
             System.err.println("There was an error trying to read input file " + e.getMessage());
             System.exit(0);

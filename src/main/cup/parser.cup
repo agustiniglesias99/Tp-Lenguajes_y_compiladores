@@ -120,7 +120,7 @@ asignacion ::= ID:id {: symbolTable.verifyType(id.toString()); :} ASIGNACION exp
     System.out.println("asignacion => id asignacion expresion;");
 :};
 
-iteracion 	::= 	WHILE:_while {: banderaPila  = false; :} PA condicion PC LLA programa LLC {:
+iteracion 	::= 	{: intermediateCode.addTerceto("ADDLABEL", "_", "_"); :} WHILE:_while {: banderaPila  = false; :} PA condicion PC LLA programa LLC {:
     //intermediateCode.addTerceto("BI", intermediateCode.getIndexDraw("Condind"), "_");
     intermediateCode.addTerceto("BI", "["+pilaCond.pop()+"]", "_");
 
@@ -338,14 +338,30 @@ write   ::= SYS_OUT PA CADENA:cadena PC {:
 
 //SLICEANDCONCAT
 termino ::= SLICEANDCONCAT PA CTE:inicio COMA CTE:fin COMA CADENA:palabra1 COMA CADENA:palabra2 COMA CTE:concatenar PC {:
-    intermediateCode.addTerceto("=", "@res", "\"\"");
+    symbolTable.addToken("@resSC", "string");
+    intermediateCode.addTerceto("=", "@resSC", "\"\"");
+
+    symbolTable.addToken("@resParcial", "string");
     intermediateCode.addTerceto("=", "@resParcial", "\"\"");
+
+    symbolTable.addToken("@subcadena", "string");
     intermediateCode.addTerceto("=", "@subcadena", "\"\"");
+
+    symbolTable.addToken("@auxIni", "int");
     intermediateCode.addTerceto("=", "@auxIni", inicio.toString());
+
+    symbolTable.addToken("@auxFin", "int");
     intermediateCode.addTerceto("=", "@auxFin", fin.toString());
+
+    symbolTable.addToken("@auxPal1", "string");
     intermediateCode.addTerceto("=", "@auxPal1", palabra1.toString());
+
+    symbolTable.addToken("@auxPal2", "string");
     intermediateCode.addTerceto("=", "@auxPal2", palabra2.toString());
+
+    symbolTable.addToken("@auxConcat", "string");
     intermediateCode.addTerceto("=", "@auxConcat", concatenar.toString());
+
     int cmp = intermediateCode.addTerceto("CMP", "@auxConcat", "1");
     intermediateCode.addTerceto("BNE", "[" + (cmp + 8)  + "]", "_");
 
@@ -362,7 +378,7 @@ termino ::= SLICEANDCONCAT PA CTE:inicio COMA CTE:fin COMA CADENA:palabra1 COMA 
     int concat2 = intermediateCode.addTerceto("CONCAT", "@auxPal1", "@subcadena");
     int finResParcial2 = intermediateCode.addTerceto("=", "@resParcial", "[" + concat2 + "]");
 
-    int auxRes  = intermediateCode.addTerceto("=", "@res", "@resParcial");
+    int auxRes  = intermediateCode.addTerceto("=", "@resSC", "@resParcial");
     intermediateCode.addIndex("Tind", auxRes);
 
     System.out.println("termino => SLICEANDCONCAT PA CTE COMA CTE COMA CADENA COMA CADENA COMA CTE PC");
@@ -399,10 +415,15 @@ listaExpresiones ::= listaExpresiones COMA variableNegCalc {:
     System.out.println("listaExpresiones => listaExpresiones COMA expresion");
 :};
 listaExpresiones ::= variableNegCalc {:
+    symbolTable.addToken("@contNeg", "int");
     intermediateCode.addTerceto("=", "@contNeg", "0");
+    symbolTable.addToken("@res", "int");
     intermediateCode.addTerceto("=", "@res", "0");
+    symbolTable.addToken("@sumaParcial", "int");
     intermediateCode.addTerceto("=", "@sumaParcial", "0");
+    symbolTable.addToken("@mulParcial", "int");
     intermediateCode.addTerceto("=", "@mulParcial", "1");
+    symbolTable.addToken("@aux", "int");
     intermediateCode.addTerceto("=", "@aux", variableNegCalc);
     int cmp = intermediateCode.addTerceto("CMP", "@aux", "0");
     intermediateCode.addTerceto("BGE", "[" + (cmp + 8)  +"]", "_");

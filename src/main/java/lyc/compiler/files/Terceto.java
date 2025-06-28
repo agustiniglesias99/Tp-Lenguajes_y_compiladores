@@ -18,4 +18,17 @@ public class Terceto {
     public void modificarTerceto(String operando1){
         this.operando1 = operando1;
     }
+
+    public String getOperando() {
+        return operador;
+    }
+
+    public String getOperando1() {
+        return operando1;
+    }
+
+    public String getOperando2() {
+        return operando2;
+    }
+
 }
