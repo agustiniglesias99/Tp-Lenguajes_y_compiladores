@@ -129,7 +129,7 @@ public class AsmCodeGenerator implements FileGenerator {
                     etiquetasIf.remove(tercetoIndex);
                 }
 
-                asm += "JMP " + etiqueta + "\n";
+                asm += "JMP " + etiqueta + ":" + "\n";
 
             }else if(primer.equalsIgnoreCase("mod")){
                 if(! (segundo.startsWith("[") && segundo.endsWith("]")) ){

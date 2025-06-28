@@ -310,21 +310,21 @@ comparador  ::= 	IGUAL_IGUAL:comp 				{:
     System.out.println("IGUAL_IGUAL:comp");
 :};
 comparador  ::= 	DISTINTO:comp 					{:
-    cmpAux = "BEQ";
-    cmpAuxNeg = "BNE";
+    pilaCmp.push("BEQ");
+    pilaCmpNeg.push("BNE");
     System.out.println("DISTINTO:comp");
  :};
 comparador  ::= 	MAYOR_IGUAL:comp 				{:
-    cmpAux = "BLT";
-    cmpAuxNeg = "BGE";
+    pilaCmp.push("BLT");
+    pilaCmpNeg.push("BGE");
     System.out.println("MAYOR_IGUAL:comp"); :};
 comparador  ::= 	MENOR_IGUAL:comp				{:
     pilaCmp.push("BGT");
     pilaCmpNeg.push("BLE");
     System.out.println("MENOR_IGUAL:comp"); :};
 comparador  ::= 	MAYOR:comp						{:
-    cmpAux = "BLE";
-    cmpAuxNeg = "BGT";
+    pilaCmp.push("BLE");
+    pilaCmpNeg.push("BGT");
     System.out.println("MAYOR:comp"); :};
 comparador  ::= 	MENOR:comp						{:
     pilaCmp.push("BGE");
