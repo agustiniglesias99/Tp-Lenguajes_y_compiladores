@@ -133,6 +133,7 @@ iteracion 	::= 	 WHILE:_while {: banderaPila  = false; intermediateCode.addTerce
 
     System.out.println("WHILE:_while PA condicion PC LLA programa LLC");
  :};
+
 ifHeader    ::= 	IF {: banderaPila  = true; :} PA condicion PC {:
     System.out.println("IF PA condicion PC");
  :};
@@ -228,16 +229,18 @@ condicion 	::= 	comparacion AND:op comparacion {:
     System.out.println("comparacion AND:op comparacion");
 :};
 
-//condicion 	::=  {: orInit=true; :}	comparacion OR:op {: orInit=false; :} comparacion  {:
-condicion 	::= comparacion OR:op comparacion  {:
+condicion 	::= comparacion OR:op {:
+    orInit = true;
+    banderaCondicion.push("OR");
+    :} comparacion  {:
+//condicion 	::= comparacion OR:op comparacion  {:
     Integer tercetoNum = intermediateCode.getIndex("Cmpind");
         intermediateCode.addIndex("Condind", tercetoNum);
 
         //pilaContador.push(true);
-        banderaCondicion.push("OR");
+        //banderaCondicion.push("OR");
 
         pilaCond.push(intermediateCode.getIndex("Condind"));
-        orInit = false;
     System.out.println("comparacion OR:op comparacion");
 :};
 
@@ -261,7 +264,10 @@ comparacion ::= 	expresion {: pilaExpresion.push(intermediateCode.getIndexDraw("
     intermediateCode.addIndex("Cmpind",intCmp);
     Integer intSalto;
     if(orInit){
-      intSalto = intermediateCode.addTerceto(cmpAuxNeg,"_","_");
+      intSalto = intermediateCode.addTerceto(cmpAux,"_","_");
+      orInit = false;
+    }else if (banderaCondicion.size() > 0 && banderaCondicion.peek().equals("OR")) {
+        intSalto = intermediateCode.addTerceto(cmpAuxNeg, "_", "_"); // ← Primera condición del OR usa cmpAuxNeg
     }
     else {
       intSalto = intermediateCode.addTerceto(cmpAux,"_","_");

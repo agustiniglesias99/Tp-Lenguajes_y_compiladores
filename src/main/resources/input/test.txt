@@ -3,14 +3,8 @@ init {
 }
 a := 4
 b := 3
-if (a<8){
+if (a<8 OR c==4){
     d := 3
 }else{
  c:=9
-     if (a<8){
-         d := 3
-     }
-     else{
-        write("2do else")
-     }
 }
