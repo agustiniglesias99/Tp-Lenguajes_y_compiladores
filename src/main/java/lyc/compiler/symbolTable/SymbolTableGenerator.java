@@ -4,11 +4,13 @@ import lyc.compiler.files.FileGenerator;
 import lyc.compiler.model.CompilerException;
 import lyc.compiler.model.DeclarationVariableException;
 import lyc.compiler.model.DuplicateVariableException;
+import lyc.compiler.model.InvalidTypeException;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 import java.util.concurrent.CompletionException;
 
 public class SymbolTableGenerator implements FileGenerator {
@@ -65,6 +67,58 @@ public class SymbolTableGenerator implements FileGenerator {
         if(!this.symbols.containsKey(token)) {
             SymbolTableData data = new SymbolTableData(dataType,null,Integer.toString(token.length()));
             this.symbols.put(token,data);
+        }
+    }
+
+    public void checkTypes(String id, Stack<String> asignados) throws CompilerException {
+        if(!this.symbols.containsKey(id)) {
+            throw new DeclarationVariableException("Variable " + id + " sin declarar");
+        }
+        SymbolTableData data_id = this.symbols.get(id);
+
+
+        while(!asignados.isEmpty()){
+            String asignado = asignados.pop();
+            int flag_valor_asignado = 0;
+            if(!this.symbols.containsKey(asignado)) {
+                if(!this.symbols.containsKey("_" + asignado)) {
+                    throw new DeclarationVariableException("Variable " + id + " sin declarar");
+                }else{
+                    flag_valor_asignado = 1;
+                }
+            }
+            SymbolTableData data_asignado = flag_valor_asignado == 0 ? this.symbols.get(asignado) : this.symbols.get("_" + asignado);
+            if(!data_id.getType().equals(data_asignado.getType())) {
+                throw new InvalidTypeException("La variables '" + id + "' no puede ser asignado a una expresión de diferente tipo");
+            }
+        }
+    }
+
+    public String validarTipoExpresion(Stack<String> variables) throws CompilerException {
+        String tipo = "";
+        while(!variables.isEmpty()){
+            String variable = variables.pop();
+            int flag_valor_asignado = 0;
+            if(!this.symbols.containsKey(variable)) {
+                if(!this.symbols.containsKey("_" + variable)) {
+                    throw new DeclarationVariableException("Variable " + variable + " sin declarar");
+                }else{
+                    flag_valor_asignado = 1;
+                }
+            }
+            SymbolTableData data = flag_valor_asignado == 0 ? this.symbols.get(variable) : this.symbols.get("_" + variable);
+            if(!tipo.isEmpty() && !tipo.equals(data.getType())) {
+                throw new InvalidTypeException("No se puede operar entre variables de distintos tipos");
+            }
+            tipo = data.getType();
+        }
+
+        return tipo;
+    }
+
+    public void compararTipos(String tipo1, String tipo2) throws CompilerException {
+        if(!tipo1.equals(tipo2)) {
+            throw new InvalidTypeException("No se puede comparar entre dos variables de distintos tipos");
         }
     }
 

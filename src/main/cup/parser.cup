@@ -27,6 +27,9 @@ parser code {:
     private String variableNegCalc = "";
     private boolean orInit = false;
 
+    private Stack<String> pilaVariables = new Stack<>();
+    private String tipoComp1 = "";
+    private String tipoComp2 = "";
 
     private Stack<Integer> labelWh = new Stack<>();
 :};
@@ -126,6 +129,9 @@ sentencia ::= iteracion {: System.out.println("sentencia => seleccion"); :};
 asignacion ::= ID:id {: symbolTable.verifyType(id.toString()); :} ASIGNACION expresion {:
     Integer intA = intermediateCode.addTerceto("=", id.toString(), intermediateCode.getIndexDraw("Eind"));
     intermediateCode.addIndex("Aind", intA);
+
+    symbolTable.checkTypes(id.toString(), pilaVariables);
+    pilaVariables.clear();
     System.out.println("asignacion => id asignacion expresion;");
 :};
 
@@ -273,7 +279,14 @@ condicion	::= 	comparacion 				   {:
 condicion 	::=		NEGADO comparacion			   {: System.out.println("NEGADO condicion"); :};
 condicion	::= 	NEGADO expresion 			   {: System.out.println("NEGADO expresion"); :};
 
-comparacion ::= 	expresion {: pilaExpresion.push(intermediateCode.getIndexDraw("Eind")); :} comparador expresion  {:
+comparacion ::= 	expresion {: pilaExpresion.push(intermediateCode.getIndexDraw("Eind")); tipoComp1 = symbolTable.validarTipoExpresion(pilaVariables); pilaVariables.clear(); :} comparador expresion  {:
+
+    tipoComp2 = symbolTable.validarTipoExpresion(pilaVariables);
+    symbolTable.compararTipos(tipoComp1, tipoComp2);
+    tipoComp1 = "";
+    tipoComp2 = "";
+    pilaVariables.clear();
+
     Integer intCmp = intermediateCode.addTerceto("cmp",pilaExpresion.pop(),intermediateCode.getIndexDraw("Eind"));
     intermediateCode.addIndex("Cmpind",intCmp);
 
@@ -366,21 +379,33 @@ factor    ::= termino {:
 termino   ::= CTE:cte {:
     Integer intT = intermediateCode.addTerceto(cte.toString(), "_", "_");
     intermediateCode.addIndex("Tind", intT);
+
+    pilaVariables.push(cte.toString());
+
     System.out.println("CONSTANTE");
 :};
 termino   ::= ID:id {:
     Integer intT = intermediateCode.addTerceto(id.toString(), "_", "_");
     intermediateCode.addIndex("Tind", intT);
+
+    pilaVariables.push(id.toString());
+
     System.out.println("IDENTIFICADOR");
 :};
 termino   ::= CTE_REAL:cte {:
      Integer intT = intermediateCode.addTerceto(cte.toString(), "_", "_");
      intermediateCode.addIndex("Tind", intT);
+
+     pilaVariables.push(cte.toString());
+
      System.out.println("CONSTANTE REAL");
 :};
 termino   ::= CADENA:cadena {:
     Integer intT = intermediateCode.addTerceto(cadena.toString(), "_", "_");
     intermediateCode.addIndex("Tind", intT);
+
+    pilaVariables.push(cadena.toString());
+
     System.out.println("CADENA");
 :};
 termino   ::= PA expresion PC {:
