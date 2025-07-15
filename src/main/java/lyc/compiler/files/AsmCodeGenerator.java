@@ -51,6 +51,8 @@ public class AsmCodeGenerator implements FileGenerator {
         String asm = "include macros2.asm\ninclude number.asm\n .MODEL  LARGE\n.386\n.STACK 200h\n\n";
         asm += generarDATA();
         String ci = generarAsmTercetos();
+        ci = ci.replaceAll("@", "");
+        ci = ci.replaceAll("_-", "_n");
         fileWriter.write(asm + generarCabecera() + ci + "\nmov ax, 4C00h\nint 21h\nEND START");
     }
 
@@ -61,6 +63,9 @@ public class AsmCodeGenerator implements FileGenerator {
             String primer = tc.getOperando();
             String segundo = tc.getOperando1();
             String tercero = tc.getOperando2();
+
+            segundo = convertirConstante(segundo);
+            tercero = convertirConstante(tercero);
 
             if(etiquetasIf.get(i) != null){
                 asm += etiquetasIf.get(i) + ":" + "\n";
@@ -129,7 +134,7 @@ public class AsmCodeGenerator implements FileGenerator {
                     etiquetasIf.remove(tercetoIndex);
                 }
 
-                asm += "JMP " + etiqueta + ":" + "\n";
+                asm += "JMP " + etiqueta + "\n";
 
             }else if(primer.equalsIgnoreCase("mod")){
                 if(! (segundo.startsWith("[") && segundo.endsWith("]")) ){
@@ -166,11 +171,33 @@ public class AsmCodeGenerator implements FileGenerator {
         return asm;
     }
 
+    private String convertirConstante(String cte){
+        boolean flag_number;
+
+        try{
+            Float.parseFloat(cte);
+            flag_number = true;
+        }catch(NumberFormatException excepcion){
+            flag_number = false;
+        }
+
+        String final_cte = cte;
+        if(flag_number){
+            final_cte = final_cte.replaceAll("\\.", "_");
+            System.out.println(final_cte);
+        }
+
+        return flag_number ? "_" + final_cte : cte;
+    }
+
     private String generarCodigoIf(Terceto tc) {
         String asm_if = "";
 
         String segundo = tc.getOperando1();
         String tercero = tc.getOperando2();
+
+        segundo = convertirConstante(segundo);
+        tercero = convertirConstante(tercero);
 
         if( !(segundo.startsWith("[") && segundo.endsWith("]")) ){
             asm_if += "FLD " + segundo + "\n";
@@ -210,6 +237,8 @@ public class AsmCodeGenerator implements FileGenerator {
         } else {
             // Es una constante o variable directa
             if(!operando.equals("_")){
+
+                operando = convertirConstante(operando);
                 asm += "FLD " + operando + "\n";
             }
         }
@@ -229,8 +258,11 @@ public class AsmCodeGenerator implements FileGenerator {
     private String generarAsignacion(Terceto tc) {
         String asm = "";
         String segundo = tc.getOperando1();
-
         String tercero = tc.getOperando2();
+
+        segundo = convertirConstante(segundo);
+        tercero = convertirConstante(tercero);
+
         boolean is_string = false;
 
         if( !(tercero.startsWith("[") && tercero.endsWith("]")) ) {
@@ -246,6 +278,7 @@ public class AsmCodeGenerator implements FileGenerator {
             if(is_string){
                 asm += "STRCPY " + segundo + " " + tercero + "\n";
             }else{
+
                 asm += "FLD " + tercero + "\n";
             }
         }
@@ -327,15 +360,32 @@ public class AsmCodeGenerator implements FileGenerator {
         for (Map.Entry<String, SymbolTableData> entry : symbols.entrySet()) {
             SymbolTableData data = entry.getValue();
             if(!data.getType().equals("string")){
-                asm_DATA += entry.getKey().replace(".","_") + "\t" + "dd ";
+                String posible = entry.getKey().replace(".","_");
+
+                if(posible.contains("@")){
+                    posible = posible.replaceAll("_", "");
+                }
+
+                asm_DATA += (posible + "\t" + "dd ");
                 if(data.getValue() == null)
                     asm_DATA += "? \n";
                 else{
                     String value = "";
-                    if(data.getType().equals("int"))
-                        value = data.getValue() + ".0";
-                    else
+                    if(data.getType().equals("int")){
+                        if(data.getValue().startsWith("@")){
+                            if(data.getValue().equals("@mulParcial")){
+                                value = "1.0";
+                            }else{
+                                value = "0.0";
+                            }
+                        }else{
+                            value = data.getValue() + ".0";
+                        }
+                    }else{
                         value = data.getValue();
+                    }
+
+
                     asm_DATA += value + "\n";
                 }
             }
@@ -349,6 +399,9 @@ public class AsmCodeGenerator implements FileGenerator {
                 }
             }
         }
+
+        asm_DATA = asm_DATA.replaceAll("@", "");
+        asm_DATA = asm_DATA.replaceAll("_-", "_n");
 
         return asm_DATA + "\n";
     }

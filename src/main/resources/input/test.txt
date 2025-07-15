@@ -3,6 +3,6 @@ init {
     variable1,a,b,x,r,c,f,y,z,base,var1 : int
     p1, p2, p3 : string
 }
-a := 4
+a := -4
 b := 5
 x := negativeCalculation(3.5, -2.0, a, b, -3.0)

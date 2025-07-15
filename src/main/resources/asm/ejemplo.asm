@@ -13,11 +13,11 @@ MAXTEXTSIZE equ 50
     _n2         dd  ?
     T_Ingrese_un_numero         db  "Ingrese un numero",'$', 33 dup (?)
     T_Ingrese_otro_numero           db  "Ingrese otro numero",'$', 31 dup (?)
-    T_El_primer_numero_ingresado_es_mayor_al_segundo            db  "El primer numero ingresado es mayor al segundo",'$', 4 dup (?)
-    T_El_primer_numero_ingresado_es_menor_al_segundo            db  "El primer numero ingresado es menor al segundo",'$', 4 dup (?)
+    T_El_primer_numero_ingresado_es_mayor_al_segundo            db  "El primer numero ingresado es mayor al segundosss",'$', 4 dup (?)
+    T_El_primer_numero_ingresado_es_menor_al_segundo            db  "El primer numero ingresado es menor al segundossssss",'$', 4 dup (?)
     T_Los_numeros_son_iguales           db  "Los numeros son iguales",'$', 27 dup (?)
     _aux            db  MAXTEXTSIZE dup (?),'$'
-    _msgPRESIONE            db  0DH,0AH,"Presione una tecla para continuar...",'$'
+    _msgPRESIONE            db  0DH,0AH,"Presione una tecla para continuarrrrr...",'$'
     _NEWLINE            db  0DH,0AH,'$'
 
 .CODE

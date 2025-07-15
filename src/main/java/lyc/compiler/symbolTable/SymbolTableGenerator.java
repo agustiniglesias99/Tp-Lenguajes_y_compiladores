@@ -48,6 +48,13 @@ public class SymbolTableGenerator implements FileGenerator {
         }
     }
 
+    public void addToken(String token,String dataType,String value) {
+        if(!this.symbols.containsKey(token)) {
+            SymbolTableData data = new SymbolTableData(dataType,token,value);
+            this.symbols.put("_" + token,data);
+        }
+    }
+
     public void addDataType(String id, String dataType) throws CompilerException {
         SymbolTableData data = this.symbols.get(id);
         if(data.getType() != null){

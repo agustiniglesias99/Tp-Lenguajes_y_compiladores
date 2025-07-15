@@ -527,9 +527,12 @@ listaExpresiones ::= variableNegCalc {:
     intermediateCode.addTerceto("=", "@res", "0");
     symbolTable.addToken("@sumaParcial", "int");
     intermediateCode.addTerceto("=", "@sumaParcial", "0");
+    symbolTable.addToken("0", "int", "0");
     symbolTable.addToken("@mulParcial", "int");
     intermediateCode.addTerceto("=", "@mulParcial", "1");
+    symbolTable.addToken("1", "int", "1");
     symbolTable.addToken("@aux", "int");
+
     intermediateCode.addTerceto("=", "@aux", variableNegCalc);
     int cmp = intermediateCode.addTerceto("CMP", "@aux", "0");
     intermediateCode.addTerceto("BGE", "[" + (cmp + 8)  +"]", "_");
@@ -542,6 +545,8 @@ listaExpresiones ::= variableNegCalc {:
 
     int mulPAux = intermediateCode.addTerceto("*", "@mulParcial", "@aux");
     intermediateCode.addTerceto("=", "@mulParcial", "[" + mulPAux +"]");
+
+    symbolTable.addToken("2", "int", "2");
 
     System.out.println("listaExpresiones => expresion");
 :};
