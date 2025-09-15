@@ -85,6 +85,7 @@ terminal CTE_REAL;
 terminal INIT;
 terminal SLICEANDCONCAT;
 terminal NEGCALCULATION;
+terminal ISZERO;
 terminal DP;
 
 // Non Terminals
@@ -440,6 +441,7 @@ write   ::= SYS_OUT PA CADENA:cadena PC {:
     int Wind = intermediateCode.addTerceto("write", cadena.toString(), "_");
     intermediateCode.addIndex("Wind", Wind);
     System.out.println("WRITE");
+
 :};
 
 //SLICEANDCONCAT
@@ -490,6 +492,42 @@ termino ::= SLICEANDCONCAT PA CTE:inicio COMA CTE:fin COMA CADENA:palabra1 COMA 
     System.out.println("termino => SLICEANDCONCAT PA CTE COMA CTE COMA CADENA COMA CADENA COMA CTE PC");
 :};
 
+//* isZero(expr)  ≡  (expr == 0)  — usable en IF/WHILE y combinable con AND/OR */
+comparacion ::= ISZERO PA expresion PC {:
+    /* 1) Validación de tipo de la expresión */
+    String tipo = symbolTable.validarTipoExpresion(pilaVariables);
+    pilaVariables.clear();
+
+    /* 2) Registrar la constante 0 en la TS con el **nombre _0**
+          y con el valor acorde al tipo (0.0 si es float, 0 si es int) */
+    String valorCero = "float".equals(tipo) ? "0.0" : "0";
+    symbolTable.addToken("0", tipo, valorCero);   // NEW ➜ crea/actualiza _0 en la TS
+
+    /* 3) Generar el CMP contra 0 (siempre usamos el lexema "0" para referir a _0) */
+    Integer intCmp = intermediateCode.addTerceto(
+        "cmp",
+        intermediateCode.getIndexDraw("Eind"),
+        "0"   // <-- así el generador ASM usará FLD _0
+    );
+    intermediateCode.addIndex("Cmpind", intCmp);
+
+    /* 4) Crear el salto pendiente y apilarlo en IF/WHILE según corresponda */
+    Integer intSalto = intermediateCode.addTerceto("_", "_", "_");
+    pilaSaltos.push(intSalto);
+    if (banderaPila) { pilaIf.push(intSalto); } else { pilaWhile.push(intSalto); }
+
+    /* 5) Semántica de “expr == 0”: salta cuando expr != 0 */
+    pilaCmp.push("BNE");    // falso
+    pilaCmpNeg.push("BEQ"); // negación
+
+    System.out.println("comparacion => ISZERO(expr)");
+:};
+
+
+
+
+
+
 //NEGCALCULATION
 termino ::= NEGCALCULATION PA listaExpresiones PC {:
     int mod = intermediateCode.addTerceto("MOD", "@contNeg", "2");
@@ -504,7 +542,7 @@ termino ::= NEGCALCULATION PA listaExpresiones PC {:
 
     System.out.println("termino => NEGCALCULATION PA listaExpresiones PC");
 :};
-listaExpresiones ::= listaExpresiones COMA variableNegCalc {:
+listaExpresiones ::= listaExpresiones COMA{:
     intermediateCode.addTerceto("=", "@aux", variableNegCalc);
     int cmp = intermediateCode.addTerceto("CMP", "@aux", "0");
     intermediateCode.addTerceto("BGE", "[" + (cmp + 8)  +"]", "_");

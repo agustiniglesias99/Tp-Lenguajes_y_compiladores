@@ -86,13 +86,14 @@ MENOS_ASTERISCO		=	[^*]
 CUALQUIER_CARACTER 	= 	[^\r\n]
 COMENTARIO_SINGLE   =   "#+"(.*?)"+#"
 OP_RES		        =	"-"
-CTE		            =	("0"|( ("-")? [1-9]{DIGITO}*))
+CTE                 = ("0"|([1-9]{DIGITO}*))
 CADENA              = \"([^\"\\]|\\.)*\"
 
 ID			        =	{LETRA}({LETRA}|{DIGITO})*
 
 SLICEANDCONCAT      =   "sliceAndConcat"
 NEGCALCULATION      =   "negativeCalculation"
+ISZERO              =   "isZero"
 
 OP_SUM		        =	"+"
 OP_MUL              =	"*"
@@ -111,7 +112,7 @@ MENOR               =	"<"
 MAYOR               =	">"
 LLA     			=	"{"
 LLC   				=	"}"
-CTE_REAL            =	{CTE}? {PUNTO} {DIGITO}*//[0]{0,1}[1-9]{0,11}[.][0-9]{0,11}
+CTE_REAL            =	{CTE}? {PUNTO} {DIGITO} *//[0]{0,1}[1-9]{0,11}[.][0-9]{0,11}
 DP                  =   ":"
 
 %%
@@ -167,6 +168,8 @@ DP                  =   ":"
 {SLICEANDCONCAT}    {   return symbol(ParserSym.SLICEANDCONCAT, yytext()); }
 
 {NEGCALCULATION}    {   return symbol(ParserSym.NEGCALCULATION, yytext()); }
+
+{ISZERO}            { return symbol(ParserSym.ISZERO, yytext()); }
 
 {ID}			    {
       					if(!esLongitudIDValida())

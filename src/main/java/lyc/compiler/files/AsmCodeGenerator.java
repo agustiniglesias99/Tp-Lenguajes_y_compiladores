@@ -112,7 +112,7 @@ public class AsmCodeGenerator implements FileGenerator {
             }else if(primer.equals("ADDLABEL")){
                 String etiqueta = generarEtiqueta();
                 etiquetasIf.put(i, etiqueta);
-                asm += etiqueta + "\n";
+                asm += etiqueta + ":\n";
             }else if(primer.equalsIgnoreCase("bi")){
                 String tercetoRef = segundo.substring(1, segundo.length() - 1);
                 int tercetoIndex = Integer.parseInt(tercetoRef);
@@ -301,22 +301,47 @@ public class AsmCodeGenerator implements FileGenerator {
         String segundo = tc.getOperando1();
         Map<String, SymbolTableData> symbols = SymbolTableGenerator.getInstance().getSymbols();
 
-        Boolean finded = false;
-        for (Map.Entry<String, SymbolTableData> entry : symbols.entrySet()) {
-            if(entry.getKey().equals(segundo)){
-                if(entry.getValue().getType().equals("string")){
-                    asm_scanf += "DisplayString ";
-                }else{
-                    asm_scanf += "DisplayFloat ";
-                }
-                finded = true;
-            }
-        }
-        if(!finded){
-            asm_scanf += "DisplayString ";
+        // ¿Es string?
+        boolean isString = false;
+        SymbolTableData sd = symbols.get(segundo);
+        if (sd != null) {
+            isString = "string".equals(sd.getType());
+        } else if (segundo.length() > 1 && segundo.startsWith("\"") && segundo.endsWith("\"")) {
+            isString = true;
         }
 
-        return asm_scanf + segundo + "\n";
+        if (isString) {
+            asm_scanf += "DisplayString ";
+
+            String label = null;
+
+            // 1) Si segundo es un literal con comillas, busco en la TS por valor exacto
+            if (segundo.startsWith("\"") && segundo.endsWith("\"")) {
+                for (Map.Entry<String, SymbolTableData> e : symbols.entrySet()) {
+                    SymbolTableData d = e.getValue();
+                    if ("string".equals(d.getType()) && segundo.equals(d.getValue())) {
+                        label = e.getKey();
+                        break;
+                    }
+                }
+                // Fallback: construyo etiqueta como en .DATA (prefijo "_" y solo alfanuméricos)
+                if (label == null) {
+                    //label = "_" + segundo.replaceAll("[^a-zA-Z0-9]*", "");
+                    label = normalizeStringLabelForAsm(label);
+                }
+            } else {
+                // 2) Si ya viene como identificador, lo normalizo igual que en .DATA
+                label = segundo.replace(".", "_").replaceAll("[^a-zA-Z0-9]*", "");
+            }
+
+            // Misma sanitización que usás al final del generador
+            label = label.replaceAll("@", "").replaceAll("_-", "_n");
+            return asm_scanf + label + "\n";
+        } else {
+            // No string: imprimir número/var float
+            asm_scanf += "DisplayFloat ";
+            return asm_scanf + segundo + "\n";
+        }
     }
 
     private String generarScanf(Terceto tc){
@@ -404,6 +429,14 @@ public class AsmCodeGenerator implements FileGenerator {
         asm_DATA = asm_DATA.replaceAll("_-", "_n");
 
         return asm_DATA + "\n";
+    }
+
+    private String normalizeStringLabelForAsm(String op) {
+        if (op != null && op.length() >= 2 && op.charAt(0) == '"' && op.charAt(op.length()-1) == '"') {
+            String content = op.substring(1, op.length()-1);
+            return "_" + content.replaceAll("[^A-Za-z0-9]+", "");
+        }
+        return op;
     }
 
 }

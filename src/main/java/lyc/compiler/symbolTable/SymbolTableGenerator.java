@@ -43,7 +43,7 @@ public class SymbolTableGenerator implements FileGenerator {
 
     public void addToken(String token,String dataType) {
         if(!this.symbols.containsKey(token)) {
-            SymbolTableData data = new SymbolTableData(dataType,token,Integer.toString(token.length()-1));
+            SymbolTableData data = new SymbolTableData(dataType,token,Integer.toString(token.length()-2));
             this.symbols.put("_" + token,data);
         }
     }
@@ -131,5 +131,16 @@ public class SymbolTableGenerator implements FileGenerator {
 
     public Map<String,SymbolTableData> getSymbols(){
         return this.symbols;
+    }
+
+    private String normalizeStringLabel(String literal) {
+        String content = literal.substring(1, literal.length() - 1);
+        String base = "_" + content.replaceAll("[^A-Za-z0-9]+", "");
+        String key = base;
+        int i = 1;
+        while (symbols.containsKey(key)) {
+            key = base + "_" + i++;
+        }
+        return key;
     }
 }

@@ -1,8 +1,14 @@
 init {
-    a1, b1 : float
-    variable1,a,b,x,r,c,f,y,z,base,var1 : int
-    p1, p2, p3 : string
+    s,h,contador,i : int
 }
-a := -4
-b := 5
-x := negativeCalculation(3.5, -2.0, a, b, -3.0)
+s := 3
+i := 3
+h := 44
+contador := 10
+while (i>0)
+{
+    if(isZero(i-2) OR isZero(contador-10)){
+        write("Funcion es cero")
+    }
+    i := i - 1
+}
