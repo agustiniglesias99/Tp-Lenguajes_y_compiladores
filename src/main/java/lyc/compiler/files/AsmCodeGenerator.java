@@ -320,22 +320,23 @@ public class AsmCodeGenerator implements FileGenerator {
                 for (Map.Entry<String, SymbolTableData> e : symbols.entrySet()) {
                     SymbolTableData d = e.getValue();
                     if ("string".equals(d.getType()) && segundo.equals(d.getValue())) {
-                        label = e.getKey();
+                        // IMPORTANT: canonicalize even if the table key has quotes/spaces
+                        label = normalizeStringLabelForAsm(e.getKey());
                         break;
                     }
                 }
-                // Fallback: construyo etiqueta como en .DATA (prefijo "_" y solo alfanuméricos)
                 if (label == null) {
-                    //label = "_" + segundo.replaceAll("[^a-zA-Z0-9]*", "");
-                    label = normalizeStringLabelForAsm(label);
+                    // Fallback: construyo etiqueta como en .DATA (prefijo "_" y solo alfanuméricos)
+                    label = normalizeStringLabelForAsm(segundo);
                 }
             } else {
                 // 2) Si ya viene como identificador, lo normalizo igual que en .DATA
-                label = segundo.replace(".", "_").replaceAll("[^a-zA-Z0-9]*", "");
+                label = normalizeStringLabelForAsm(segundo);
             }
 
             // Misma sanitización que usás al final del generador
             label = label.replaceAll("@", "").replaceAll("_-", "_n");
+
             return asm_scanf + label + "\n";
         } else {
             // No string: imprimir número/var float
@@ -432,11 +433,23 @@ public class AsmCodeGenerator implements FileGenerator {
     }
 
     private String normalizeStringLabelForAsm(String op) {
-        if (op != null && op.length() >= 2 && op.charAt(0) == '"' && op.charAt(op.length()-1) == '"') {
-            String content = op.substring(1, op.length()-1);
-            return "_" + content.replaceAll("[^A-Za-z0-9]+", "");
+        if (op == null) return "_str";
+        String s = op;
+
+        // If it is a quoted literal, drop quotes
+        if (s.length() >= 2 && s.charAt(0) == '"' && s.charAt(s.length()-1) == '"') {
+            s = s.substring(1, s.length()-1);
         }
-        return op;
+
+        // If it looks like _"text", drop leading underscores and quotes
+        s = s.replace("\"", "");
+        s = s.replace(".", "_");
+        while (s.startsWith("_")) s = s.substring(1);
+
+        // Keep only letters/digits, collapse everything else
+        s = s.replaceAll("[^A-Za-z0-9]+", "");
+        if (s.isEmpty()) s = "str";
+        return "_" + s;
     }
 
 }

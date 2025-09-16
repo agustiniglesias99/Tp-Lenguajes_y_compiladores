@@ -27,13 +27,43 @@ public class SymbolTableGenerator implements FileGenerator {
         return symbolTable;
     }
     @Override
-    public void generate(FileWriter fileWriter) throws IOException {
+    /*public void generate(FileWriter fileWriter) throws IOException {
         String file = String.format("%-30s|%-30s|%-30s|%-30s\n","NOMBRE","TIPODATO","VALOR","LONGITUD");
         for (Map.Entry<String, SymbolTableData> entry : this.symbols.entrySet()) {
              file += String.format("%-30s", entry.getKey()) + "|" + entry.getValue().toString() + "\n";
         }
         fileWriter.write(file);
+    }*/
+
+    public void generate(FileWriter fw) throws IOException {
+        fw.write(String.format("%-30s|%-30s|%-30s|%-30s%n", "NOMBRE","TIPODATO","VALOR","LONGITUD"));
+
+        for (Map.Entry<String, SymbolTableData> entry : this.symbols.entrySet()) {
+            String key = entry.getKey();
+            SymbolTableData d = entry.getValue();
+
+            String showName = key;
+            if ("string".equalsIgnoreCase(d.getType())) {
+                // Prefer canonical label derived from the literal value
+                String val = d.getValue(); // includes quotes
+                showName = toStringLabelForTable((val != null) ? val : key);
+            }
+
+            fw.write(String.format("%-30s|%30s|%30s|%30s%n",
+                    showName,
+                    d.getType(),
+                    d.getValue(),   // keep quotes here
+                    d.getLength()));
+        }
     }
+
+    private static String toStringLabelForTable(String op) {
+            if (op != null && op.length() >= 2 && op.charAt(0) == '"' && op.charAt(op.length()-1) == '"') {
+                String content = op.substring(1, op.length()-1);
+                return "_" + content.replaceAll("[^A-Za-z0-9]+", "");
+            }
+            return op;
+        }
 
     public void addToken(String token) {
         if(!this.symbols.containsKey(token)) {
@@ -131,16 +161,5 @@ public class SymbolTableGenerator implements FileGenerator {
 
     public Map<String,SymbolTableData> getSymbols(){
         return this.symbols;
-    }
-
-    private String normalizeStringLabel(String literal) {
-        String content = literal.substring(1, literal.length() - 1);
-        String base = "_" + content.replaceAll("[^A-Za-z0-9]+", "");
-        String key = base;
-        int i = 1;
-        while (symbols.containsKey(key)) {
-            key = base + "_" + i++;
-        }
-        return key;
     }
 }
